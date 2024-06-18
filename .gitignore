@@ -11,3 +11,4 @@ board/*.ld
 
 .DS_Store
 board/.DS_Store
+board/On-Board Debug.launch
