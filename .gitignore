@@ -5,10 +5,6 @@ board/Drivers/*
 board/.settings/*
 board/.mxproject
 
-# external flash memory files?
-# https://community.st.com/t5/stm32cubeide-mcus/must-flash-id-file-be-edited-to-write-erase-an-external-flash/td-p/586192
-board/*.ld
-
 .DS_Store
 board/.DS_Store
 board/On-Board Debug.launch
