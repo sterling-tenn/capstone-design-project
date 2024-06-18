@@ -68,3 +68,21 @@ local.properties
 .sts4-cache/
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse
+
+
+
+
+
+
+
+
+# Debug folder contain artifacts
+# https://community.st.com/t5/stm32cubeide-mcus/where-should-i-initialise-git-when-creating-a-cubeide-project/td-p/119583
+board/Debug/*
+board/Drivers/*
+board/.settings/*
+board/.mxproject
+
+# external flash memory files?
+# https://community.st.com/t5/stm32cubeide-mcus/must-flash-id-file-be-edited-to-write-erase-an-external-flash/td-p/586192
+board/*.ld
