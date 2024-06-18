@@ -88,3 +88,4 @@ board/.mxproject
 board/*.ld
 
 .DS_Store
+board/.DS_Store
