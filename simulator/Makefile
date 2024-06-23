@@ -1,11 +1,16 @@
 program = main.py
 
-# main run target, depends on virtual environment existing
-run: env/bin/activate
-	./env/scripts/python $(program)
-
-# automatically reinstall the dependencies whenever the requirements.txt file changes
+# linux/macOS
+linux: env/bin/activate
+	./env/bin/python3 $(program)
 env/bin/activate: requirements.txt
+	python3 -m venv env
+	./env/bin/pip install -r requirements.txt
+
+# windows
+win: env/scripts/activate
+	./env/scripts/python $(program)
+env/scripts/activate: requirements.txt
 	python -m venv env	
 	./env/scripts/pip install -r requirements.txt
 
