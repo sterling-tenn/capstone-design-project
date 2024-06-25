@@ -26,29 +26,31 @@ class ParticleFilter(object):
                 heading = random.uniform(-180, 180),
 
                 # each particle follows the same error distribution as the robot
-                movement_error = random.gauss(MOVEMENT_MEAN, MOVEMENT_STDDEV),
-                heading_error = random.gauss(HEADING_MEAN, HEADING_STDDEV),
-                measurement_error = random.gauss(MEASUREMENT_MEAN, MEASUREMENT_STDDEV)
+                movement_error = 0,
+                heading_error = 0,
+                measurement_error = 0
             )
             particles.append(particle)
         return particles
 
+    # should be provided either distance or rotation, not both (one of them should be 0)
     def move_robot(self, distance: float, rotation: float) -> None:
         self.robot.move(distance, rotation, self.width, self.height)
         
         # regenerate robot's error parameters for next movement
-        self.robot.movement_error = random.gauss(MOVEMENT_MEAN, MOVEMENT_STDDEV)
-        self.robot.heading_error = random.gauss(HEADING_MEAN, HEADING_STDDEV)
-        self.robot.measurement_error = random.gauss(MEASUREMENT_MEAN, MEASUREMENT_STDDEV)
+        self.robot.movement_error = random.gauss(MOVEMENT_ERR_MEAN, MOVEMENT_ERR_STDDEV * math.sqrt(distance)) # we want to scale variance by distance
+        self.robot.heading_error = random.gauss(HEADING_ERR_MEAN, HEADING_ERR_STDDEV * math.sqrt(rotation))
+        self.robot.measurement_error = random.gauss(MEASUREMENT_ERR_MEAN, MEASUREMENT_ERR_STDDEV * math.sqrt(distance))
 
+    # should be provided either distance or rotation, not both (one of them should be 0)
     def move_particles(self, distance: float, rotation: float) -> None:
         for particle in self.particles:
             particle.move(distance, rotation, self.width, self.height)
 
             # regenerate particle's error parameters for next movement
-            particle.movement_error = random.gauss(MOVEMENT_MEAN, MOVEMENT_STDDEV)
-            particle.heading_error = random.gauss(HEADING_MEAN, HEADING_STDDEV)
-            particle.measurement_error = random.gauss(MEASUREMENT_MEAN, MEASUREMENT_STDDEV)
+            particle.movement_error = random.gauss(MOVEMENT_ERR_MEAN, MOVEMENT_ERR_STDDEV * math.sqrt(distance))
+            particle.heading_error = random.gauss(HEADING_ERR_MEAN, HEADING_ERR_STDDEV * math.sqrt(rotation))
+            particle.measurement_error = random.gauss(MEASUREMENT_ERR_MEAN, MEASUREMENT_ERR_STDDEV * math.sqrt(distance))
 
     # sample particles
     def update_particle_weightings(self) -> None:

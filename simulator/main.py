@@ -11,9 +11,9 @@ if __name__ == "__main__":
         heading = ROBOT_STARTING_HEADING,
         
         # simulated robot actuator error
-        movement_error = random.gauss(MOVEMENT_MEAN, MOVEMENT_STDDEV),
-        heading_error = random.gauss(HEADING_MEAN, HEADING_STDDEV),
-        measurement_error = random.gauss(MEASUREMENT_MEAN, MEASUREMENT_STDDEV)
+        movement_error = 0,
+        heading_error = 0,
+        measurement_error = 0
     )
 
     # create particle filter

@@ -11,13 +11,14 @@ NUM_PARTICLES = 100
 WIDTH = 500
 HEIGHT = 500
 
-# Expected mean and standard deviation of the movement, heading and measurement noise
-MOVEMENT_MEAN = 1
-MOVEMENT_STDDEV = 1
-HEADING_MEAN = 1
-HEADING_STDDEV = 1
-MEASUREMENT_MEAN = 1
-MEASUREMENT_STDDEV = 1
+# Expected mean error of the movement, heading and measurement
+# Standard deviation is per sqrt(distance) or sqrt(rotation) since we want to scale variance by distance or rotation
+MOVEMENT_ERR_MEAN = 0
+MOVEMENT_ERR_STDDEV = 1
+HEADING_ERR_MEAN = 0
+HEADING_ERR_STDDEV = 1
+MEASUREMENT_ERR_MEAN = 0
+MEASUREMENT_ERR_STDDEV = 1
 
 # Standard Deviations
 # Tune based on how much tolerance we want to give to comparing each particle to the robot distance and heading measurements
