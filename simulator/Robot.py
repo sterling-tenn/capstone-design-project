@@ -11,6 +11,7 @@ class Robot(object):
         self.movement_error = movement_error
         self.heading_error = heading_error
         self.measurement_error = measurement_error
+        self.weight = 1 # Default weight for only the particles not the robot, should not be 0
         
     def obstacle_distances(self, obstacles: List[tuple[float, float]]) -> None:
         obstacle_measurements = []
