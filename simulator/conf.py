@@ -3,8 +3,8 @@ import math
 # General configuration variables
 WIDTH = 500
 HEIGHT = 500
-NUM_PARTICLES = 100
-NUM_OBSTACLES = 2
+NUM_PARTICLES = 1000
+NUM_OBSTACLES = 10
 OBSTACLE_SEED = 45
 
 # Robot and particle parameters
