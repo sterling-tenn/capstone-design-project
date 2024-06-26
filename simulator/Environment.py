@@ -20,7 +20,7 @@ class Environment:
         # Set up colors
         self.white = (255, 255, 255)
         self.blue = (0, 0, 255)
-        self.red = (255, 255, 0)
+        self.red = (255, 0, 0)
         self.black = (0, 0, 0)
         self.green = (0, 255, 0)
         self.yellow = (255, 255, 0)
@@ -32,7 +32,7 @@ class Environment:
     def draw_obstacle(self, x, y, width, height):
         half_width = width / 2.0
         half_height = height / 2.0
-        pygame.draw.rect(self.screen, self.blue, (x-half_width, y-half_height, width, height))
+        pygame.draw.rect(self.screen, self.red, (x-half_width, y-half_height, width, height))
 
     def draw_agent(self, x, y, theta, radius, color):
         line_length = 25

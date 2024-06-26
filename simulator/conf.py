@@ -4,16 +4,16 @@ import math
 WIDTH = 500
 HEIGHT = 500
 NUM_PARTICLES = 100
-NUM_OBSTACLES = 10
+NUM_OBSTACLES = 2
 OBSTACLE_SEED = 45
 
-# Robot starting parameters
+# Robot and particle parameters
 ROBOT_STARTING_POS_X = 250
 ROBOT_STARTING_POS_Y = 250
 ROBOT_STARTING_ANGLE = math.pi
-ROBOT_COLOR = "red"
-
-PARTICLE_COLOR = "pink"
+# Pygame colors
+ROBOT_COLOR = "green"
+PARTICLE_COLOR = "yellow"
 
 # Standard Deviations
 # Tune based on how much tolerance we want to give to comparing each particle to the robot distance and heading measurements
