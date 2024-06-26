@@ -1,4 +1,4 @@
-from typing import List
+from typing import *
 from Robot import Robot
 import pygame
 import math
@@ -6,7 +6,7 @@ from helper import cos, sin
 from conf import BLACK, GREY, RED, WHITE
 
 class Environment(object):
-    def __init__(self, obstacles: List[tuple[float, float]], main_robot: Robot, particles: List[Robot], height: float, width: float) -> None:
+    def __init__(self, obstacles: List[Tuple[float, float]], main_robot: Robot, particles: List[Robot], height: float, width: float) -> None:
         self.obstacles = obstacles
         self.main_robot = main_robot
         self.particles = particles

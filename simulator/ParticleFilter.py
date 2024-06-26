@@ -15,7 +15,6 @@ class ParticleFilter(object):
         self.height = height
 
         self.particles = self.create_particles()
-        self.normalize_particle_weights()
 
     # particles are essentially just simulated robots
     def create_particles(self) -> List[Robot]:
@@ -24,37 +23,28 @@ class ParticleFilter(object):
             particle = Robot(
                 x = random.randint(0, self.width),
                 y = random.randint(0, self.height),
-                heading = random.uniform(-180, 180),
+                heading = random.uniform(HEADING_RANGE[0], HEADING_RANGE[1]),
 
                 # each particle follows the same error distribution as the robot
-                movement_error = 0,
-                heading_error = 0,
-                measurement_error = 0
+                movement_error = random.uniform(MOVEMENT_NOISE[0], MOVEMENT_NOISE[1]),
+                heading_error = random.uniform(HEADING_NOISE[0], HEADING_NOISE[1]),
+                measurement_error = random.uniform(MEASUREMENT_NOISE[0], MEASUREMENT_NOISE[1])
             )
             particles.append(particle)
         return particles
 
-    # should be provided either distance or rotation, not both (one of them should be 0)
-    def move_robot(self, distance: float, rotation: float) -> None:
-        self.robot.move(distance, rotation, self.width, self.height)
-        
-        # regenerate robot's error parameters for next movement
-        self.robot.movement_error = random.gauss(MOVEMENT_ERR_MEAN, MOVEMENT_ERR_STDDEV * math.sqrt(distance)) # we want to scale variance by distance
-        self.robot.heading_error = random.gauss(HEADING_ERR_MEAN, HEADING_ERR_STDDEV * math.sqrt(rotation))
-        self.robot.measurement_error = random.gauss(MEASUREMENT_ERR_MEAN, MEASUREMENT_ERR_STDDEV * math.sqrt(distance))
+    def apply_movement(self):
+        dist = random.uniform(MOVEMENT_DIST[0], MOVEMENT_DIST[1])
+        rot = random.uniform(HEADING_ROTATION[0], HEADING_ROTATION[1])
 
-    # should be provided either distance or rotation, not both (one of them should be 0)
-    def move_particles(self, distance: float, rotation: float) -> None:
+        # move the robot
+        self.robot.move(dist, rot, self.width, self.height)
+
+        # move each particle
         for particle in self.particles:
-            particle.move(distance, rotation, self.width, self.height)
+            particle.move(dist, rot, self.width, self.height)
 
-            # regenerate particle's error parameters for next movement
-            particle.movement_error = random.gauss(MOVEMENT_ERR_MEAN, MOVEMENT_ERR_STDDEV * math.sqrt(distance))
-            particle.heading_error = random.gauss(HEADING_ERR_MEAN, HEADING_ERR_STDDEV * math.sqrt(rotation))
-            particle.measurement_error = random.gauss(MEASUREMENT_ERR_MEAN, MEASUREMENT_ERR_STDDEV * math.sqrt(distance))
-
-    # sample particles
-    def update_particle_weightings(self) -> None:
+    def update_particle_weightings(self):
         # get the robot's measurements
         robot_distances = self.robot.obstacle_distances(self.obstacles)
 
@@ -69,42 +59,59 @@ class ParticleFilter(object):
             likelyhood *= normal_distribution(self.robot.heading, HEADING_SIGMA, particle.heading) # compare heading angles
 
             particle.weight = likelyhood
-        
-        # normalize likelyhoods so the sum of all the particles' likelyhoods is 1 (convert to probability)
-        self.normalize_particle_weights()
 
-    # create new generation of particles, based on the previous generation's performance
-    def regenerate_particles(self) -> None:
+    def regenerate_particles(self):
+        # normalize the weights
+        total_weight = sum(particle.weight for particle in self.particles)
+        if total_weight == 0:
+            total_weight = 1
+        
+        # scaled weight corresponding to each particle
+        normalized_weight = [particle.weight / total_weight for particle in self.particles] # sum equals 1
+
+        # regenerate particles based on their weight
         new_particles = []
+        for _ in range(self.num_particles):
+            particle_index = self.select_particle(normalized_weight)
+            
+            # TODO: check if this is correct
+            self.particles[particle_index].weight = 0 # reset the weight of the selected particle, will be recalculated in the next iteration
+            
+            new_particles.append(self.particles[particle_index])
 
-        for _ in self.particles:
-            new_particle = self.select_particle()
-            new_particles.append(new_particle)
-        
-        self.particles = new_particles
+        # update the particles with the new set
+        for i, particle in enumerate(self.particles):
+            particle.x = new_particles[i].x
+            particle.y = new_particles[i].y
+            particle.heading = self.normalize_angle_degrees(new_particles[i].heading)
+            particle.weight = new_particles[i].weight
 
-    # higher weighted particles have a higher chance of being selected
-    def select_particle(self) -> Robot:
-        total_weight = sum(particle.weight for particle in self.particles)
+            # apply new noise
+            particle.movement_error = random.uniform(MOVEMENT_NOISE[0], MOVEMENT_NOISE[1])
+            particle.heading_error = random.uniform(HEADING_NOISE[0], HEADING_NOISE[1])
+            particle.measurement_error = random.uniform(MEASUREMENT_NOISE[0], MEASUREMENT_NOISE[1])
 
-        # we want to do random selection with bias towards higher weighted particles
-        threshold = random.uniform(0, total_weight)
-
-        # search for the particle in which the threshold falls into its range
+    # we want to do random selection with bias towards higher weighted particles
+    def select_particle(self, weights) -> int:
+        threshold = random.uniform(0, 1) # since weights are normalized, total weight is 1
         running_sum = 0
-        for particle in self.particles:
-            running_sum += particle.weight
+        
+        # search for the particle in which the threshold falls into its range
+        for i, weight in enumerate(weights):
+            running_sum += weight
             if running_sum > threshold:
-                return particle
-
-        # should never get here
-        return None
+                return i
     
-    # ensure weights of all particles sum up to 1
-    def normalize_particle_weights(self) -> None:
-        total_weight = sum(particle.weight for particle in self.particles)
-        for particle in self.particles:
-            particle.weight /= total_weight
+    # Ensure the angle is within the range [-180, 180]
+    def normalize_angle_degrees(self, angle) -> float:
+        normalized_angle = angle % 360
+
+        if normalized_angle > 180:
+            normalized_angle -= 360
+        elif normalized_angle < -180:
+            normalized_angle += 360
+
+        return normalized_angle
 
 # generate random obstacles within the given width and height of the particle filter
 def generate_obstacles(n: int, width: int, height: int, seed: int = None) -> List[Tuple[float, float]]:

@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import *
 from helper import euclidian_distance
 from helper import cos, sin
 
@@ -11,9 +11,9 @@ class Robot(object):
         self.movement_error = movement_error
         self.heading_error = heading_error
         self.measurement_error = measurement_error
-        self.weight = 1 # Default weight for only the particles not the robot, should not be 0
+        self.weight = 0
         
-    def obstacle_distances(self, obstacles: List[tuple[float, float]]) -> None:
+    def obstacle_distances(self, obstacles: List[Tuple[float, float]]) -> None:
         obstacle_measurements = []
         for obstacle_x, obstacle_y in obstacles:
             distance_to_obstacle = euclidian_distance(obstacle_x, obstacle_y, self.x, self.y, self.measurement_error)
@@ -40,16 +40,3 @@ class Robot(object):
         self.x = new_position_x
         self.y = new_position_y
         self.heading -= heading_rotation
-
-        
-
-        
-    
-    
-    
-    
-    
-    
-    
-    
-        
