@@ -1,44 +1,36 @@
-# ----- Store configuration variables -----
+import math
 
-ROBOT_STARTING_POS_X = 250
-ROBOT_STARTING_POS_Y = 250
-ROBOT_STARTING_HEADING = 0
-
-# Particle Filter Configuration
-NUM_OBSTACLES = 5
-OBSTACLE_SEED = 45
-NUM_PARTICLES = 100
+# General configuration variables
 WIDTH = 500
 HEIGHT = 500
+NUM_PARTICLES = 100
+NUM_OBSTACLES = 10
+OBSTACLE_SEED = 45
 
-MOVEMENT_NOISE = [-1, 1]
-HEADING_NOISE = [-1, 1]
-MEASUREMENT_NOISE = [-1, 1]
+# Robot starting parameters
+ROBOT_STARTING_POS_X = 250
+ROBOT_STARTING_POS_Y = 250
+ROBOT_STARTING_ANGLE = math.pi
+ROBOT_COLOR = "red"
 
-# apply_movement() range
-MOVEMENT_DIST = [0, 4]
-HEADING_ROTATION = [-0.15, 0.15]
-
-HEADING_RANGE = [-180, 180] # degrees to be constrained to
-
-# Expected mean error of the movement, heading and measurement
-# Standard deviation is per sqrt(distance) or sqrt(rotation) since we want to scale variance by distance or rotation
-# MOVEMENT_ERR_MEAN = 0
-# MOVEMENT_ERR_STDDEV = 1
-# HEADING_ERR_MEAN = 0
-# HEADING_ERR_STDDEV = 1
-# MEASUREMENT_ERR_MEAN = 0
-# MEASUREMENT_ERR_STDDEV = 1
+PARTICLE_COLOR = "pink"
 
 # Standard Deviations
 # Tune based on how much tolerance we want to give to comparing each particle to the robot distance and heading measurements
 # The higher the sigma, the more tolerant we are to differences in measurements
-DISTANCE_SIGMA = 30
-HEADING_SIGMA = 15
+DISTANCE_SIGMA = 15
+HEADING_SIGMA = 30
 
+# Movement distance and rotation ranges for simulation purposes - for apply_movement()
+MOVEMENT_DISTANCE_RANGE = [0, 4]
+MOVEMENT_ROTATION_RANGE = [-0.15, 0.15]
 
-# Color variables
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREY = (240, 240, 240)
+# Noise ranges for the robot
+ROBOT_NOISE_LINEAR_RANGE = [-0.5, 0.5]
+ROBOT_NOISE_ANGULAR_RANGE = [-0.03, 0.03]
+ROBOT_NOISE_MEASUREMENT_RANGE = [-2, 2]
+
+# Noise ranges for the particles
+PARTICLE_NOISE_LINEAR_RANGE = [-1, 1]
+PARTICLE_NOISE_ANGULAR_RANGE = [-0.15, 0.15]
+PARTICLE_NOISE_MEASUREMENT_RANGE = [-1, 1]

@@ -1,42 +1,43 @@
 import math
-from typing import *
-from helper import euclidian_distance
-from helper import cos, sin
+from helper import *
+from conf import *
 
-class Robot(object):
-    def __init__(self, x: float, y: float, heading: float, movement_error: float, heading_error: float, measurement_error: float) -> None:
+class Robot:
+    def __init__(self, x, y, theta, color, noise_linear, noise_angular, noise_measurement):
         self.x = x
         self.y = y
-        self.heading = heading
-        self.movement_error = movement_error
-        self.heading_error = heading_error
-        self.measurement_error = measurement_error
-        self.weight = 0
-        
-    def obstacle_distances(self, obstacles: List[Tuple[float, float]]) -> None:
-        obstacle_measurements = []
-        for obstacle_x, obstacle_y in obstacles:
-            distance_to_obstacle = euclidian_distance(obstacle_x, obstacle_y, self.x, self.y, self.measurement_error)
-            obstacle_measurements.append(distance_to_obstacle)
-        
-        return obstacle_measurements
-    
-    def move(self, distance: float, heading_rotation: float, width: float, height: float) -> None:
-        current_heading = self.heading + self.heading_error
-        
-        new_position_x = self.x + (distance * cos(current_heading) + self.measurement_error)
-        new_position_y = self.y + (distance * sin(current_heading) + self.measurement_error)
+        self.theta = normalize_angle_radians(theta) # radians
+        self.color = color
+        self.weight = 0.0
+        self.noise_linear = noise_linear
+        self.noise_angular = noise_angular
+        self.noise_measurement = noise_measurement
 
-        if new_position_x > width:
-            new_position_x = width
-        elif new_position_x < 0:
-            new_position_x = 0
+    #this function moves the agent
+    def move(self, dist, rot):
+        angle = self.theta + self.noise_angular
+        angle = normalize_angle_radians(angle)
+
+        new_x = self.x + (dist * math.cos(angle) + self.noise_linear)
+        new_y = self.y + (dist * math.sin(angle) + self.noise_linear)
+
+        #check boundaries and loop around if necessary
+        if new_x > WIDTH:
+            new_x = 0
+        elif new_x < 0:
+            new_x = WIDTH
+        if new_y > HEIGHT:
+            new_y = 0
+        elif new_y < 0:
+            new_y = HEIGHT
         
-        if new_position_y > height:
-            new_position_y = height
-        elif new_position_y < 0:
-            new_position_y = 0
-        
-        self.x = new_position_x
-        self.y = new_position_y
-        self.heading -= heading_rotation
+        self.x = new_x
+        self.y = new_y
+        self.theta += rot
+
+    def observe(self, obstacles):
+        distances = []
+        for obstacle in obstacles:
+            land_x, land_y = obstacle    
+            distances.append((math.sqrt((land_x - self.x)**2 + (land_y - self.y)**2) + self.noise_measurement))
+        return distances

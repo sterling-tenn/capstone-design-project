@@ -1,65 +1,106 @@
-from typing import *
-from Robot import Robot
 import pygame
 import math
-from helper import cos, sin
-from conf import BLACK, GREY, RED, WHITE
+import sys
 
-class Environment(object):
-    def __init__(self, obstacles: List[Tuple[float, float]], main_robot: Robot, particles: List[Robot], height: float, width: float) -> None:
-        self.obstacles = obstacles
-        self.main_robot = main_robot
-        self.particles = particles
-        
-        # print("inside env")
-        # print(self.particles)
+class Environment:
+    def __init__(self, width, height, obstacles, robot, particles):
+        pygame.init()
+
         self.width = width
         self.height = height
-        self.display = None
-    
-    def initialize_display(self) -> None:
-        self.display = pygame.display.set_mode((self.width, self.height)) 
-        pygame.display.set_caption('Monte Carlo Localization')
-        self.display.fill(WHITE)
-    
-    def insert_obstacles(self) -> None:
-        # every obstacle on the screen will be a square
-        obstacle_height = 15
-        obstacle_thickness = 15
-        obstacle_width = 15
-        
-        for x, y in self.obstacles:
-            rectangle = pygame.Rect(x, y, obstacle_height, obstacle_width)
-            pygame.draw.rect(self.display, BLACK, rectangle, obstacle_thickness)
-    
-    def insert_robots_and_particles(self) -> None:
-        # every particle (including the robot) would be a circle
-        # color of particle and robot would be different
-        robot_color = GREY
-        robot_radius = 50
-        
-        # print("drawing")
-        # print(self.particles)
-        
-        particle_color = RED
-        particle_radius = 5
-        
-        line = 100
-        
-        # draw the robot circle and bearing
-        pygame.draw.circle(self.display, robot_color, (self.main_robot.x, self.main_robot.y), robot_radius)
+        self.obstacles = obstacles
+        self.robot = robot
+        self.particles = particles
 
-        robot_heading_x = self.main_robot.x + (robot_radius) * cos(self.main_robot.heading)
-        robot_heading_y = self.main_robot.y + (robot_radius) * sin(self.main_robot.heading)
-        pygame.draw.line(self.display, BLACK, (self.main_robot.x, self.main_robot.y), (robot_heading_x, robot_heading_y))
+        self.screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Monte Carlo Localization - Particle Filter")
 
-        # draw all particles
-        for particle in self.particles:
-            particle_heading_x = particle.x + line * math.cos(self.main_robot.heading)
-            particle_heading_y = particle.y + line * math.sin(self.main_robot.heading)
-            pygame.draw.line(self.display, BLACK, (particle.x, particle.y), (particle_heading_x, particle_heading_y))
-            pygame.draw.circle(self.display, particle_color, (particle.x, particle.y), particle_radius)
+        self.clock = pygame.time.Clock()
 
+        # Set up colors
+        self.white = (255, 255, 255)
+        self.blue = (0, 0, 255)
+        self.red = (255, 255, 0)
+        self.black = (0, 0, 0)
+        self.green = (0, 255, 0)
+        self.yellow = (255, 255, 0)
+
+        self.draw_robot_measurements = False
+        self.draw_circle_measurements = False
+        self.draw_particles = True
+
+    def draw_obstacle(self, x, y, width, height):
+        half_width = width / 2.0
+        half_height = height / 2.0
+        pygame.draw.rect(self.screen, self.blue, (x-half_width, y-half_height, width, height))
+
+    def draw_agent(self, x, y, theta, radius, color):
+        line_length = 25
+        pygame.draw.circle(self.screen, color, [x, y], radius, 0)
+        pygame.draw.line(self.screen, self.black, [x, y], [x + line_length * math.cos(theta), y + line_length * math.sin(theta)], 2)
+
+    def draw_robot_obstacles_measurements(self, obstacle_x, obstacle_y):
+        pygame.draw.line(self.screen, (255, 158, 158, 1), [self.robot.x, self.robot.y], [obstacle_x, obstacle_y], 2)
+
+    def draw_circle_obstacles_measurements(self, obstacle_x, obstacle_y, radius):
+        pygame.draw.circle(self.screen, (37,156,198,255), [obstacle_x, obstacle_y], radius, 2)
         
-        
-        
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_m]:
+                if self.draw_robot_measurements == False:
+                    self.draw_robot_measurements = True
+                else:
+                    self.draw_robot_measurements = False
+
+            if keys[pygame.K_c]:
+                if self.draw_circle_measurements == False:
+                    self.draw_circle_measurements = True
+                else:
+                    self.draw_circle_measurements = False
+
+            if keys[pygame.K_p]:
+                if self.draw_particles == False:
+                    self.draw_particles = True
+                else:
+                    self.draw_particles = False
+
+            if keys[pygame.K_q]:
+                pygame.quit()
+                sys.exit()
+
+            # Draw obstacles on the screen
+            self.screen.fill((self.white))
+            for obstacle in self.obstacles:
+                self.draw_obstacle(obstacle[0], obstacle[1], 20, 20)
+
+
+            #Draw particles on the screen
+            if self.draw_particles:
+                for particle in self.particles:
+                    self.draw_agent(particle.x, particle.y, particle.theta, 10, particle.color)
+            
+            # Draw robot's measurement
+            if self.draw_robot_measurements:
+                for obstacle in self.obstacles:
+                    self.draw_robot_obstacles_measurements(obstacle[0], obstacle[1])
+
+            if self.draw_circle_measurements:
+                for obstacle in self.obstacles:
+                    self.draw_circle_obstacles_measurements(obstacle[0], obstacle[1], math.sqrt((obstacle[0] - self.robot.x)**2 + (obstacle[1] - self.robot.y)**2))
+                    
+
+            # Draw the robot on the screen
+            self.draw_agent(self.robot.x, self.robot.y, self.robot.theta, 10, self.robot.color)
+
+            # Update display
+            pygame.display.flip()
+
+            # Control the game loop speed
+            self.clock.tick(30)

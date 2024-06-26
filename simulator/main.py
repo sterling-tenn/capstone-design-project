@@ -1,73 +1,62 @@
-from ParticleFilter import *
+from helper import *
 from Robot import *
 from Environment import *
+from ParticleFilter import *
 from conf import *
-import pygame
+from typing import *
+import random
+import threading
 
-HEIGHT = 1000
-WIDTH = 1000
+# Generate random obstacles for the particle filter
+def generate_obstacles(n: int, seed: int = None) -> List[Tuple[float, float]]:
+    if seed is not None:
+        random.seed(seed)
+    
+    coordinates = []
+    for _ in range(n):
+        x = random.uniform(0, WIDTH)
+        y = random.uniform(0, HEIGHT)
+        coordinates.append((x, y))
+    
+    return coordinates
 
 if __name__ == "__main__":
 
-    # create robot
+    # Create robot
     robot = Robot(
         x = ROBOT_STARTING_POS_X,
         y = ROBOT_STARTING_POS_Y,
-        heading = ROBOT_STARTING_HEADING,
-        
-        # simulated robot actuator error
-        movement_error = random.uniform(MOVEMENT_NOISE[0], MOVEMENT_NOISE[1]),
-        heading_error = random.uniform(HEADING_NOISE[0], HEADING_NOISE[1]),
-        measurement_error = random.uniform(MEASUREMENT_NOISE[0], MEASUREMENT_NOISE[1])
+        theta = ROBOT_STARTING_ANGLE,
+        color = ROBOT_COLOR,
+        noise_linear = random.uniform(*ROBOT_NOISE_LINEAR_RANGE),
+        noise_angular = random.uniform(*ROBOT_NOISE_ANGULAR_RANGE),
+        noise_measurement = random.uniform(*ROBOT_NOISE_MEASUREMENT_RANGE),
     )
     
-    obstacles = generate_obstacles(NUM_OBSTACLES, WIDTH, HEIGHT, OBSTACLE_SEED)
+    obstacles = generate_obstacles(NUM_OBSTACLES, OBSTACLE_SEED)
 
-    # create particle filter
+    # Create particle filter
     particle_filter = ParticleFilter(
         num_particles = NUM_PARTICLES,
         robot = robot,
-        obstacles = obstacles,
+        obstacles = obstacles
+    )
+
+    # Create pygame environment
+    pygame = Environment(
         width = WIDTH,
-        height = HEIGHT
+        height = HEIGHT,
+        obstacles = obstacles,
+        robot = robot,
+        particles = particle_filter.particles,
     )
-    
-    # print("aaaa")
-    # print(particle_filter.particles)
 
-    maze = Environment(
-        obstacles=obstacles,
-        main_robot=robot,
-        particles=particle_filter.particles,
-        height=HEIGHT,
-        width=WIDTH
-    )
-    
-    maze.initialize_display()
-    # print("qqqqqqqqqqqqqqq")
-    # particle_filter.apply_movement()
-    # particle_filter.update_particle_weightings()
-    # particle_filter.regenerate_particles()
-    # print("aaaa")
-    # print(particle_filter.particles[0].x, particle_filter.particles[0].y, particle_filter.particles[0].heading, particle_filter.particles[0].weight)
-    
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        
-        particle_filter.apply_movement()
-        particle_filter.update_particle_weightings()
-        particle_filter.regenerate_particles()
-        
-        print("main")
-        print(particle_filter.particles) 
-        
-        particles = particle_filter.particles
-        if particles:
-            maze.particles = particles
-        print(maze.particles[0].x, maze.particles[0].y, maze.particles[0].heading, maze.particles[0].weight)
-        break
+    # Run the particle filter and pygame environment in parallel
+    run_pf = threading.Thread(target=particle_filter.run_particle_filter)
+    thread_pygame = threading.Thread(target=pygame.run)
+    run_pf.start()
+    pygame.run()
+    run_pf.join()
+    thread_pygame.join()
 
-        maze.insert_obstacles()
-        maze.insert_robots_and_particles()
+    pygame.quit()
