@@ -38,6 +38,6 @@ class Robot:
     def observe(self, obstacles):
         distances = []
         for obstacle in obstacles:
-            land_x, land_y = obstacle    
-            distances.append((math.sqrt((land_x - self.x)**2 + (land_y - self.y)**2) + self.noise_measurement))
+            x, y = obstacle    
+            distances.append((math.sqrt((x - self.x)**2 + (y - self.y)**2) + self.noise_measurement))
         return distances
