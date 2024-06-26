@@ -17,7 +17,7 @@ MEASUREMENT_NOISE = [-1, 1]
 
 # apply_movement() range
 MOVEMENT_DIST = [0, 4]
-HEADING_ROTATION = [-0.15, 0.15]
+HEADING_ROTATION = [-15, 15]
 
 HEADING_RANGE = [-180, 180] # degrees to be constrained to
 

@@ -73,6 +73,8 @@ class ParticleFilter(object):
         new_particles = []
         for _ in range(self.num_particles):
             particle_index = self.select_particle(normalized_weight)
+            if not particle_index:
+                continue
             
             # TODO: check if this is correct
             self.particles[particle_index].weight = 0 # reset the weight of the selected particle, will be recalculated in the next iteration
@@ -83,7 +85,7 @@ class ParticleFilter(object):
         for i, particle in enumerate(self.particles):
             particle.x = new_particles[i].x
             particle.y = new_particles[i].y
-            particle.heading = self.normalize_angle_degrees(new_particles[i].heading)
+            particle.heading = normalize_angle_degrees(new_particles[i].heading)
             particle.weight = new_particles[i].weight
 
             # apply new noise
@@ -101,17 +103,8 @@ class ParticleFilter(object):
             running_sum += weight
             if running_sum > threshold:
                 return i
-    
-    # Ensure the angle is within the range [-180, 180]
-    def normalize_angle_degrees(self, angle) -> float:
-        normalized_angle = angle % 360
 
-        if normalized_angle > 180:
-            normalized_angle -= 360
-        elif normalized_angle < -180:
-            normalized_angle += 360
-
-        return normalized_angle
+        return None
 
 # generate random obstacles within the given width and height of the particle filter
 def generate_obstacles(n: int, width: int, height: int, seed: int = None) -> List[Tuple[float, float]]:
