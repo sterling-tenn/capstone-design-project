@@ -3,15 +3,16 @@ from Robot import Robot
 import pygame
 import math
 from helper import cos, sin
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+from conf import BLACK, GREY, RED, WHITE
 
 class Environment(object):
     def __init__(self, obstacles: List[tuple[float, float]], main_robot: Robot, particles: List[Robot], height: float, width: float) -> None:
         self.obstacles = obstacles
         self.main_robot = main_robot
         self.particles = particles
+        
+        # print("inside env")
+        # print(self.particles)
         self.width = width
         self.height = height
         self.display = None
@@ -34,10 +35,13 @@ class Environment(object):
     def insert_robots_and_particles(self) -> None:
         # every particle (including the robot) would be a circle
         # color of particle and robot would be different
-        robot_color = (240, 240, 240)
+        robot_color = GREY
         robot_radius = 50
         
-        particle_color = (255, 0, 0)
+        # print("drawing")
+        # print(self.particles)
+        
+        particle_color = RED
         particle_radius = 5
         
         line = 100
@@ -50,11 +54,11 @@ class Environment(object):
         pygame.draw.line(self.display, BLACK, (self.main_robot.x, self.main_robot.y), (robot_heading_x, robot_heading_y))
 
         # draw all particles
-        for x, y in self.particles:
-            particle_heading_x = x + line * math.cos(self.main_robot.heading)
-            particle_heading_y = y + line * math.sin(self.main_robot.heading)
-            pygame.draw.line(self.display, BLACK, (x, y), (particle_heading_x, particle_heading_y))
-            pygame.draw.circle(self.display, particle_color, (x, y), particle_radius)
+        for particle in self.particles:
+            particle_heading_x = particle.x + line * math.cos(self.main_robot.heading)
+            particle_heading_y = particle.y + line * math.sin(self.main_robot.heading)
+            pygame.draw.line(self.display, BLACK, (particle.x, particle.y), (particle_heading_x, particle_heading_y))
+            pygame.draw.circle(self.display, particle_color, (particle.x, particle.y), particle_radius)
 
         
         

@@ -60,7 +60,7 @@ class ParticleFilter(object):
         # for each particle, check how good of an estimation it is compared to the robot's reported distance and heading
         for particle in self.particles:
             likelyhood = 1 # using 1 as a percentages, how good of an estimation is this specific particle?
-            particle_distances = particle.obstacles_distances(self.obstacles)
+            particle_distances = particle.obstacle_distances(self.obstacles)
 
             # scale likelyhood using a normal distribution with the actual robot's measurements as a reference point
             for robot_dist, particle_dist in zip(robot_distances, particle_distances): # compare all distances
@@ -71,6 +71,9 @@ class ParticleFilter(object):
         
         # normalize likelyhoods so the sum of all the particles' likelyhoods is 1 (convert to probability)
         total_weight = sum(particle.weight for particle in self.particles)
+        if total_weight == 0:
+            total_weight = 1
+        
         for particle in self.particles:
             particle.weight /= total_weight
 

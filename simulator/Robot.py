@@ -15,7 +15,7 @@ class Robot(object):
     def obstacle_distances(self, obstacles: List[tuple[float, float]]) -> None:
         obstacle_measurements = []
         for obstacle_x, obstacle_y in obstacles:
-            distance_to_obstacle = euclidian_distance(obstacle_x, obstacle_y, self.x, self.y)
+            distance_to_obstacle = euclidian_distance(obstacle_x, obstacle_y, self.x, self.y, self.measurement_error)
             obstacle_measurements.append(distance_to_obstacle)
         
         return obstacle_measurements

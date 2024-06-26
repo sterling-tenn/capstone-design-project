@@ -25,3 +25,10 @@ MEASUREMENT_ERR_STDDEV = 1
 # The higher the sigma, the more tolerant we are to differences in measurements
 DISTANCE_SIGMA = 3
 HEADING_SIGMA = 3
+
+
+# Color variables
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREY = (240, 240, 240)
