@@ -11,20 +11,30 @@ NUM_PARTICLES = 100
 WIDTH = 500
 HEIGHT = 500
 
+MOVEMENT_NOISE = [-1, 1]
+HEADING_NOISE = [-1, 1]
+MEASUREMENT_NOISE = [-1, 1]
+
+# apply_movement() range
+MOVEMENT_DIST = [0, 4]
+HEADING_ROTATION = [-0.15, 0.15]
+
+HEADING_RANGE = [-180, 180] # degrees to be constrained to
+
 # Expected mean error of the movement, heading and measurement
 # Standard deviation is per sqrt(distance) or sqrt(rotation) since we want to scale variance by distance or rotation
-MOVEMENT_ERR_MEAN = 0
-MOVEMENT_ERR_STDDEV = 1
-HEADING_ERR_MEAN = 0
-HEADING_ERR_STDDEV = 1
-MEASUREMENT_ERR_MEAN = 0
-MEASUREMENT_ERR_STDDEV = 1
+# MOVEMENT_ERR_MEAN = 0
+# MOVEMENT_ERR_STDDEV = 1
+# HEADING_ERR_MEAN = 0
+# HEADING_ERR_STDDEV = 1
+# MEASUREMENT_ERR_MEAN = 0
+# MEASUREMENT_ERR_STDDEV = 1
 
 # Standard Deviations
 # Tune based on how much tolerance we want to give to comparing each particle to the robot distance and heading measurements
 # The higher the sigma, the more tolerant we are to differences in measurements
-DISTANCE_SIGMA = 3
-HEADING_SIGMA = 3
+DISTANCE_SIGMA = 30
+HEADING_SIGMA = 15
 
 
 # Color variables

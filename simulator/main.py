@@ -16,9 +16,9 @@ if __name__ == "__main__":
         heading = ROBOT_STARTING_HEADING,
         
         # simulated robot actuator error
-        movement_error = 0,
-        heading_error = 0,
-        measurement_error = 0
+        movement_error = random.uniform(MOVEMENT_NOISE[0], MOVEMENT_NOISE[1]),
+        heading_error = random.uniform(HEADING_NOISE[0], HEADING_NOISE[1]),
+        measurement_error = random.uniform(MEASUREMENT_NOISE[0], MEASUREMENT_NOISE[1])
     )
     
     obstacles = generate_obstacles(NUM_OBSTACLES, WIDTH, HEIGHT, OBSTACLE_SEED)
@@ -44,34 +44,30 @@ if __name__ == "__main__":
     )
     
     maze.initialize_display()
-    print("qqqqqqqqqqqqqqq")
-    particle_filter.move_robot(distance=10.0, rotation=10.0)
-    particle_filter.move_particles(distance=10.0, rotation=10.0)
-    particle_filter.update_particle_weightings()
-    particle_filter.regenerate_particles()
-    print(particle_filter.particles)
+    # print("qqqqqqqqqqqqqqq")
+    # particle_filter.apply_movement()
+    # particle_filter.update_particle_weightings()
+    # particle_filter.regenerate_particles()
+    # print("aaaa")
+    # print(particle_filter.particles[0].x, particle_filter.particles[0].y, particle_filter.particles[0].heading, particle_filter.particles[0].weight)
     
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         
-        particle_filter.move_robot(distance=10.0, rotation=10.0)
-        particle_filter.move_particles(distance=10.0, rotation=10.0)
+        particle_filter.apply_movement()
         particle_filter.update_particle_weightings()
         particle_filter.regenerate_particles()
         
         print("main")
         print(particle_filter.particles) 
         
-        particles = particle_filter.return_particles()
+        particles = particle_filter.particles
         if particles:
             maze.particles = particles
+        print(maze.particles[0].x, maze.particles[0].y, maze.particles[0].heading, maze.particles[0].weight)
+        break
 
         maze.insert_obstacles()
         maze.insert_robots_and_particles()
-        
-        
-        
-            
-
