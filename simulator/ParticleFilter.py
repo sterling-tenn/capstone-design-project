@@ -15,6 +15,7 @@ class ParticleFilter(object):
         self.height = height
 
         self.particles = self.create_particles()
+        self.normalize_particle_weights()
 
     # particles are essentially just simulated robots
     def create_particles(self) -> List[Robot]:
@@ -70,9 +71,7 @@ class ParticleFilter(object):
             particle.weight = likelyhood
         
         # normalize likelyhoods so the sum of all the particles' likelyhoods is 1 (convert to probability)
-        total_weight = sum(particle.weight for particle in self.particles)
-        for particle in self.particles:
-            particle.weight /= total_weight
+        self.normalize_particle_weights()
 
     # create new generation of particles, based on the previous generation's performance
     def regenerate_particles(self) -> None:
@@ -100,6 +99,12 @@ class ParticleFilter(object):
 
         # should never get here
         return None
+    
+    # ensure weights of all particles sum up to 1
+    def normalize_particle_weights(self) -> None:
+        total_weight = sum(particle.weight for particle in self.particles)
+        for particle in self.particles:
+            particle.weight /= total_weight
 
 # generate random obstacles within the given width and height of the particle filter
 def generate_obstacles(n: int, width: int, height: int, seed: int = None) -> List[Tuple[float, float]]:
