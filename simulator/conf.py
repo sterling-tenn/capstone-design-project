@@ -3,12 +3,12 @@ import math
 # General configuration variables
 WIDTH = 500
 HEIGHT = 500
-NUM_PARTICLES = 1000
+NUM_PARTICLES = 100
 NUM_OBSTACLES = 10
 OBSTACLE_SEED = 45
 
 # diagnostics
-NUM_TIME_STEPS = 100 # set to -1 to run indefinitely (normal simulation)
+NUM_TIME_STEPS = 50 # set to -1 to run indefinitely (normal simulation)
 
 # Robot and particle parameters
 ROBOT_STARTING_POS_X = 250

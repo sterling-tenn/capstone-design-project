@@ -76,8 +76,19 @@ if __name__ == "__main__":
         plt.plot(time_steps, err3, label='Heading Angle')
 
         plt.xlabel('Time Steps')
-        plt.ylabel('Difference Error')
-        plt.title(f'Difference Error Over Time ({NUM_PARTICLES} particles)')
+        plt.ylabel('Average Difference Error')
+        plt.title(f'Average Difference Error Over Time')
         plt.legend()
+        
+        # configuration properties
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.25)
+        configuration = f"""Configuration:
+        Number of Particles: {NUM_PARTICLES}
+        Number of Obstacles: {NUM_OBSTACLES}
+        Number of Time Steps: {NUM_TIME_STEPS}
+        Distance STDDEV: {DISTANCE_SIGMA}
+        Heading STDDEV: {HEADING_SIGMA}
+        """
+        plt.text(0.20, 0.95, configuration, transform=plt.gca().transAxes, fontsize=8, verticalalignment='top', horizontalalignment='left', bbox=props)
 
         plt.show()
