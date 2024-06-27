@@ -4,6 +4,7 @@ from Robot import *
 from typing import *
 from conf import *
 from helper import *
+from tabulate import tabulate
 
 class ParticleFilter:
     def __init__(self, num_particles: int, robot: Robot, obstacles: List[Tuple[float, float]]) -> None:
@@ -91,14 +92,32 @@ class ParticleFilter:
             if running_sum > threshold:
                 return self.particles[i]
 
-    # main function in PF. 1)Sampling; 2)Weighting; 3)Resampling
     def run_particle_filter(self) -> None:
         while True:
+            self.print_robot_and_particle_info()
             self.apply_movement()
             self.update_particle_weights()
             self.regenerate_particles()
             time.sleep(0.15)
-        
+
         # debug: first frame (comment out the while loop above to see this)
         # for p in self.particles:
         #     print(p.x, p.y, p.theta, p.weight)
+
+    # same as run_particle_filter but with a set number of ticks for testing and analysis
+    def run_particle_filter_num_ticks(self, num_ticks: int) -> None:
+        for _ in range(num_ticks):
+            self.print_robot_and_particle_info()
+            self.apply_movement()
+            self.update_particle_weights()
+            self.regenerate_particles()
+            time.sleep(0.15)
+        print("Finished running particle filter for", num_ticks, "ticks. Stopping...")
+    
+    def print_robot_and_particle_info(self) -> None:
+            best_particle = max(self.particles, key=lambda p: p.weight)
+            percent_err = ["PERCENT ERROR",abs(best_particle.x - self.robot.x) / self.robot.x * 100, abs(best_particle.y - self.robot.y) / self.robot.y * 100, abs(best_particle.theta - self.robot.theta) / self.robot.theta * 100]
+            robot = ["ROBOT",self.robot.x, self.robot.y, self.robot.theta]
+            best = ["BEST PARTICLE", best_particle.x, best_particle.y, best_particle.theta]
+            print(tabulate([robot, best, percent_err], headers=["", "X POSITION", "Y POSITION", "HEADING ANGLE"]))
+            print("----------------------------------------------------------------------------------------------")

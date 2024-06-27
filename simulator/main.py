@@ -51,12 +51,15 @@ if __name__ == "__main__":
         particles = particle_filter.particles,
     )
 
-    # Run the particle filter and pygame environment in parallel
-    run_pf = threading.Thread(target=particle_filter.run_particle_filter)
-    thread_pygame = threading.Thread(target=pygame.run)
+    # Run the particle filter in a separate thread
+    if NUM_TICKS == -1:
+        run_pf = threading.Thread(target=particle_filter.run_particle_filter)
+    else:
+        run_pf = threading.Thread(target=particle_filter.run_particle_filter_num_ticks, args=(NUM_TICKS,))
+
+    # Set as daemon thread so it closes when the main thread closes
+    run_pf.daemon = True
+
     run_pf.start()
     pygame.run()
     run_pf.join()
-    thread_pygame.join()
-
-    pygame.quit()
