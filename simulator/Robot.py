@@ -35,6 +35,9 @@ class Robot:
         self.y = new_y
         self.theta += rot
 
+    # we assume that robot can observe distances to ALL obstacles - this only works for a simulation, for real life this needs to be changed
+    # robot vision/observation is limited to physical hardware, so we can't assume we can calculate the distance to all obstacles
+    # for the particles though, we can assume we can calculated the distance to all obstacles since both particles and obstacles are known
     def observe(self, obstacles):
         distances = []
         for obstacle in obstacles:
