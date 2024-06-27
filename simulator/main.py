@@ -6,6 +6,7 @@ from conf import *
 from typing import *
 import random
 import threading
+import matplotlib.pyplot as plt
 
 # Generate random obstacles for the particle filter
 def generate_obstacles(n: int, seed: int = None) -> List[Tuple[float, float]]:
@@ -52,14 +53,31 @@ if __name__ == "__main__":
     )
 
     # Run the particle filter in a separate thread
-    if NUM_TICKS == -1:
+    if NUM_TIME_STEPS == -1:
         run_pf = threading.Thread(target=particle_filter.run_particle_filter)
+        run_pf.daemon = True # Set as daemon thread so it closes when the main thread closes
+        run_pf.start()
+        pygame.run()
+        run_pf.join()
     else:
-        run_pf = threading.Thread(target=particle_filter.run_particle_filter_num_ticks, args=(NUM_TICKS,))
+        # no pygame visualization, for data diagnostics
+        run_pf = threading.Thread(target=particle_filter.run_particle_filter_num_time_steps, args=(NUM_TIME_STEPS,))
+        run_pf.daemon = True
+        run_pf.start()
+        run_pf.join()
+        
+        # graph diagnostics
+        time_steps = [i for i in range(NUM_TIME_STEPS)]
+        difference_err = particle_filter.difference_error
 
-    # Set as daemon thread so it closes when the main thread closes
-    run_pf.daemon = True
+        err1, err2, err3 = zip(*difference_err)
+        plt.plot(time_steps, err1, label='X Position')
+        plt.plot(time_steps, err2, label='Y Position')
+        plt.plot(time_steps, err3, label='Heading Angle')
 
-    run_pf.start()
-    pygame.run()
-    run_pf.join()
+        plt.xlabel('Time Steps')
+        plt.ylabel('Difference Error')
+        plt.title(f'Difference Error Over Time ({NUM_PARTICLES} particles)')
+        plt.legend()
+
+        plt.show()

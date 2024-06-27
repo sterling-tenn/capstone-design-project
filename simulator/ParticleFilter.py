@@ -14,6 +14,8 @@ class ParticleFilter:
 
         self.particles = self.create_particles()
 
+        self.difference_error = [] # diagnostics: store the difference error for each time step
+
     # particles are essentially just simulated robots
     def create_particles(self) -> List[Robot]:
         particles = []
@@ -94,7 +96,7 @@ class ParticleFilter:
 
     def run_particle_filter(self) -> None:
         while True:
-            self.print_robot_and_particle_info()
+            # self.print_robot_and_particle_info()
             self.apply_movement()
             self.update_particle_weights()
             self.regenerate_particles()
@@ -104,20 +106,34 @@ class ParticleFilter:
         # for p in self.particles:
         #     print(p.x, p.y, p.theta, p.weight)
 
-    # same as run_particle_filter but with a set number of ticks for testing and analysis
-    def run_particle_filter_num_ticks(self, num_ticks: int) -> None:
-        for _ in range(num_ticks):
+    # same as run_particle_filter but with a set number of time steps for testing and analysis
+    def run_particle_filter_num_time_steps(self, time_steps: int) -> None:
+        for _ in range(time_steps):
+            # diagnostics
             self.print_robot_and_particle_info()
+            self.difference_error.append(self.get_avg_particle_difference_err())
+
+            # actual algorithm
             self.apply_movement()
             self.update_particle_weights()
             self.regenerate_particles()
             time.sleep(0.15)
-        print("Finished running particle filter for", num_ticks, "ticks. Stopping...")
+        print("Finished running particle filter for", time_steps, "time steps. Stopping...")
     
     def print_robot_and_particle_info(self) -> None:
-            best_particle = max(self.particles, key=lambda p: p.weight)
-            percent_err = ["PERCENT ERROR",abs(best_particle.x - self.robot.x) / self.robot.x * 100, abs(best_particle.y - self.robot.y) / self.robot.y * 100, abs(best_particle.theta - self.robot.theta) / self.robot.theta * 100]
-            robot = ["ROBOT",self.robot.x, self.robot.y, self.robot.theta]
-            best = ["BEST PARTICLE", best_particle.x, best_particle.y, best_particle.theta]
-            print(tabulate([robot, best, percent_err], headers=["", "X POSITION", "Y POSITION", "HEADING ANGLE"]))
-            print("----------------------------------------------------------------------------------------------")
+        robot = ["ROBOT (true position)",self.robot.x, self.robot.y, self.robot.theta]
+
+        best_particle = max(self.particles, key=lambda p: p.weight)
+        best = ["BEST PARTICLE", best_particle.x, best_particle.y, best_particle.theta]
+
+        difference_err = ["AVG DIFFERENCE ERR (all particles)"] + self.get_avg_particle_difference_err()
+
+        print(tabulate([robot, best, difference_err], headers=["", "X POSITION", "Y POSITION", "HEADING ANGLE"]))
+        print("----------------------------------------------------------------------------------------------")
+    
+    def get_avg_particle_difference_err(self) -> List[float]:
+        avg_x = sum(p.x for p in self.particles) / len(self.particles)
+        avg_y = sum(p.y for p in self.particles) / len(self.particles)
+        avg_theta = sum(p.theta for p in self.particles) / len(self.particles)
+        difference_err = [abs(avg_x - self.robot.x), abs(avg_y - self.robot.y), abs(avg_theta - self.robot.theta)]
+        return difference_err
