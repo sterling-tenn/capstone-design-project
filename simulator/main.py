@@ -91,4 +91,5 @@ if __name__ == "__main__":
         """
         plt.text(0.20, 0.95, configuration, transform=plt.gca().transAxes, fontsize=8, verticalalignment='top', horizontalalignment='left', bbox=props)
 
-        plt.show()
+        # plt.show()
+        plt.savefig(f'{NUM_PARTICLES}particles {NUM_OBSTACLES}obstacles {NUM_TIME_STEPS}timesteps SIGMAS-{DISTANCE_SIGMA}-{HEADING_SIGMA}.png', bbox_inches='tight')
