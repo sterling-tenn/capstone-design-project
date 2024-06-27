@@ -89,7 +89,14 @@ if __name__ == "__main__":
         Distance STDDEV: {DISTANCE_SIGMA}
         Heading STDDEV: {HEADING_SIGMA}
         """
+        # configuration = f"""Configuration:
+        # (other parameters unchanged)
+        # Robot Noise Range - Movement: {ROBOT_NOISE_LINEAR_RANGE}
+        # Robot Noise Range - Rotation: {ROBOT_NOISE_ANGULAR_RANGE}
+        # Robot Noise Range - Sensor Measurement: {ROBOT_NOISE_MEASUREMENT_RANGE}
+        # """
         plt.text(0.20, 0.95, configuration, transform=plt.gca().transAxes, fontsize=8, verticalalignment='top', horizontalalignment='left', bbox=props)
 
         # plt.show()
         plt.savefig(f'{NUM_PARTICLES}particles {NUM_OBSTACLES}obstacles {NUM_TIME_STEPS}timesteps SIGMAS-{DISTANCE_SIGMA}-{HEADING_SIGMA}.png', bbox_inches='tight')
+        # plt.savefig(f'Robot Noise Range.png', bbox_inches='tight')
