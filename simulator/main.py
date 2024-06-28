@@ -79,6 +79,7 @@ if __name__ == "__main__":
         plt.ylabel('Average Difference Error')
         plt.title(f'Average Difference Error Over Time')
         plt.legend()
+        # plt.legend(loc='lower left')
         
         # configuration properties
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.25)
@@ -89,11 +90,11 @@ if __name__ == "__main__":
         Distance STDDEV: {DISTANCE_SIGMA}
         Heading STDDEV: {HEADING_SIGMA}
         """
-        # configuration = f"""Configuration:
+        # configuration = f"""Robot Noise Range Configuration:
         # (other parameters unchanged)
-        # Robot Noise Range - Movement: {ROBOT_NOISE_LINEAR_RANGE}
-        # Robot Noise Range - Rotation: {ROBOT_NOISE_ANGULAR_RANGE}
-        # Robot Noise Range - Sensor Measurement: {ROBOT_NOISE_MEASUREMENT_RANGE}
+        # Movement: {ROBOT_NOISE_LINEAR_RANGE}
+        # Rotation: {ROBOT_NOISE_ANGULAR_RANGE}
+        # Sensor Measurement: {ROBOT_NOISE_MEASUREMENT_RANGE}
         # """
         plt.text(0.20, 0.95, configuration, transform=plt.gca().transAxes, fontsize=8, verticalalignment='top', horizontalalignment='left', bbox=props)
 
