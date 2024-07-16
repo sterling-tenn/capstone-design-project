@@ -1,0 +1,1 @@
+this files in this folder are the ones stored on the raspberry pi

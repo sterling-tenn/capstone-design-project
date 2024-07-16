@@ -1,11 +1,11 @@
 #!/bin/bash
 # This script copies a file to a remote host and executes a script on the remote host
 
-LOCAL_FILE_PATH="C:\Users\sterl\Desktop\capstone-design-project\raspberrypi\test.json" # File to send
-REMOTE_USER="sterl"
-REMOTE_HOST="sweden"
-REMOTE_DIR="/home/sterl" # Working directory to receive file and execute script
-REMOTE_SCRIPT="test.py" # Remote script to execute
+LOCAL_FILE_PATH="C:\Users\sterl\Desktop\capstone-design-project\raspberrypi\control-machine\test.json" # File to send
+REMOTE_USER="raspberrypi"
+REMOTE_HOST="192.168.137.239"
+REMOTE_DIR="/home/raspberrypi/CargoBuddy" # Working directory to receive file and execute script
+REMOTE_SCRIPT="onlaunch.py" # Remote script to execute
 
 copy_file() {
     scp "$LOCAL_FILE_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR"

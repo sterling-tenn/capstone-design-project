@@ -1,0 +1,1 @@
+this files in this folder are for the machine that initiates the `ssh` connection to the raspberry pi
