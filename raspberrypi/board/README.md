@@ -1,6 +1,6 @@
 this files in this folder are the ones stored on the raspberry pi
 
-Setup (example) startup service (for `launcher.sh`):
+## Setup (example) startup service (for `launcher.sh`):
 
 `sudo nano /etc/systemd/system/cargobuddy-startup.service`
 ```
@@ -23,3 +23,17 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 sudo systemctl enable cargobuddy-startup.service
 ```
+
+## Raspberry Pi 5 Pinout
+![alt text](Raspberry-Pi-5-Pinout.jpg)
+
+## Servo
+- connect servo to GPIO 15 (defined in `servo.py`)
+- connect to 5V power and ground
+- cable colouring
+    - orange - GPIO
+    - red - 5V power
+    - brown - ground
+
+## Ultrasonic Sensor
+- 
