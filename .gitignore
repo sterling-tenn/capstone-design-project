@@ -12,3 +12,6 @@ board/On-Board Debug.launch
 simulator/env/*
 simulator/__pycache__
 simulator/*.png
+
+raspberrypi/env/
+raspberrypi/__pycache__
