@@ -9,7 +9,7 @@ LOCAL_FILES=(
             "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/keyboard_test.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/servo.py"
-            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"
+            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"
             )
 
 REMOTE_USER="raspberrypi"

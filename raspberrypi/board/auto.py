@@ -1,6 +1,10 @@
 # automatic predefined movement sequence
 import time
-from gpiozero import Servo
+from gpiozero import Servo, DistanceSensor
+import threading
+
+# Set GPIO for ultrasonic sensor
+sensor = DistanceSensor(trigger=23, echo=24)  # physical pins 16, 18
 
 # Set GPIO for servos
 left_servo = Servo(27) # GPIO 27, physical pin 13
@@ -52,6 +56,12 @@ def stop(t):
     right_servo.detach()
     time.sleep(t)
 
+def read_sensor(sensor, stop_event):
+    while not stop_event.is_set():
+        distance = sensor.distance * 100  # convert to cm
+        print(f"Distance: {distance:.2f} cm")
+        time.sleep(0.5)
+
 def main():
     # stop servos on program start
     left_servo.detach()
@@ -59,11 +69,26 @@ def main():
 
     try:
         input("Press Enter to start the automatic movement sequence")
+
+        # to constantly read sensor in a separate thread
+        stop_event = threading.Event()
+        sensor_thread = threading.Thread(target=read_sensor, args=(sensor, stop_event))
+        sensor_thread.start()
+
         while True:
             move_forward(1)      
             stop(2)
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting...")
+    finally:
+        # stop servos on program completion
+        left_servo.detach()
+        right_servo.detach()
+        
+        # close sensor and sensor thread
+        sensor.close()
+        stop_event.set()
+        sensor_thread.join()
 
 if __name__ == '__main__':
     main()
