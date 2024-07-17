@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import json
+from Astar import *
 
 class MapUI:
     def __init__(self, root, width, height):
@@ -13,6 +14,9 @@ class MapUI:
         self.start_pos = None
         self.target_pos = None
         self.obstacles = []
+        
+        self.width = width
+        self.height = height
 
         self.canvas.bind("<Button-1>", self.add_point) # Bind left click to add_point function
 
@@ -41,6 +45,9 @@ class MapUI:
 
         self.load_button = tk.Button(self.button_frame, text="Load Map", command=self.load_map)
         self.load_button.grid(row=0, column=5)
+        
+        self.load_button = tk.Button(self.button_frame, text="Find Path", command=self.find_path)
+        self.load_button.grid(row=0, column=6)
 
     def set_start_position(self):
         self.mode = "start"
@@ -87,7 +94,11 @@ class MapUI:
         map_data = {
             'start': self.canvas.coords(self.start_pos)[:2],
             'target': self.canvas.coords(self.target_pos)[:2],
-            'obstacles': self.obstacles
+            'obstacles': self.obstacles,
+            'dimensions': {
+                "width": self.width,
+                "height": self.height
+            }
         }
 
         file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
@@ -95,6 +106,19 @@ class MapUI:
             with open(file_path, 'w') as file:
                 json.dump(map_data, file)
             messagebox.showinfo("Save Successful", f"Map saved to {file_path}")
+
+    def find_path(self):
+        
+        start = tuple(self.canvas.coords(self.start_pos)[:2])
+        dest = tuple(self.canvas.coords(self.target_pos)[:2])
+        
+        astar = Astar(self.height, self.width, self.obstacles, start, dest)
+        path = astar.find_path()
+        
+        print(path)
+        
+        for x, y in path:
+            self.canvas.create_oval(x-5, y-5, x+5, y+5, fill="red")
 
     def load_map(self):
         file_path = filedialog.askopenfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
@@ -119,6 +143,8 @@ class MapUI:
 
         self.root.title("Particle Filter Map Builder [Map Loaded]")
         messagebox.showinfo("Load Successful", f"Map loaded from {file_path}")
+        
+    
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -127,4 +153,5 @@ if __name__ == "__main__":
         width=500,
         height=500
         )
+    
     root.mainloop()
