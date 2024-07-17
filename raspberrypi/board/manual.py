@@ -1,57 +1,72 @@
 from gpiozero import Servo
-import keyboard
+import sys
+import termios
+import tty
 import time
 
 # Set GPIO for servos
-left_servo_pin = 17
-right_servo_pin = 18
-left_servo = Servo(left_servo_pin, min_pulse_width=1/1000, max_pulse_width=2/1000)
-right_servo = Servo(right_servo_pin, min_pulse_width=1/1000, max_pulse_width=2/1000)
+left_servo = Servo(27) # GPIO 27, physical pin 13
+right_servo = Servo(17) # GPIO 17, physical pin 11
 
-FORWARD = 180
-BACKWARD = 0
-STOP = 90
+FORWARD = 1
+BACKWARD = -1
 
 def move_forward():
     left_servo.value = FORWARD
-    right_servo.value = FORWARD
-    print("Moving Forward")
+    right_servo.value = BACKWARD
 
 def move_backward():
     left_servo.value = BACKWARD
-    right_servo.value = BACKWARD
-    print("Moving Backward")
+    right_servo.value = FORWARD
 
 # counter clockwise
 def move_left():
     left_servo.value = BACKWARD
-    right_servo.value = FORWARD
-    print("Moving Left")
+    right_servo.value = BACKWARD
 
 # clockwise
 def move_right():
     left_servo.value = FORWARD
-    right_servo.value = BACKWARD
-    print("Moving Right")
+    right_servo.value = FORWARD
 
 def stop():
-    left_servo.value = STOP
-    right_servo.value = STOP
-    print("Stopped")
+    left_servo.detach()
+    right_servo.detach()
+
+# get keyboard input
+def getch():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
 
 def main():
+    stop() # stop servos on program start
     while True:
-        if keyboard.is_pressed('w'):
+        char = getch()
+        if char == 'w':
+            print("Moving Forward")
             move_forward()
-        elif keyboard.is_pressed('s'):
+        elif char == 's':
+            print("Moving Backward")
             move_backward()
-        elif keyboard.is_pressed('a'):
+        elif char == 'a':
+            print("Turning Left")
             move_left()
-        elif keyboard.is_pressed('d'):
+        elif char == 'd':
+            print("Turning Right")
             move_right()
-        elif keyboard.is_pressed('t'):
+        elif char == 't':
+            print("Stopping")
             stop()
-        
+        elif char == 'q':
+            print("Exiting")
+            break
+
         time.sleep(0.1)
 
 if __name__ == "__main__":
