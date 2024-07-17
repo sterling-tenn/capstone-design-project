@@ -3,16 +3,17 @@
 
 # List of files to send
 # servo.py, ultrasonic.py, keyboard_test.py are temp for testing
-LOCAL_FILES=("C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/requirements.txt"
-             "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/auto.py"
-             "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
-            #  "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/keyboard_test.py"
-            #  "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/servo.py"
-            #  "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"
-             )
+LOCAL_FILES=(
+            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/requirements.txt"
+            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/auto.py"
+            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
+            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/keyboard_test.py"
+            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/servo.py"
+            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"
+            )
 
 REMOTE_USER="raspberrypi"
-REMOTE_HOST="192.168.1.107"
+REMOTE_HOST="192.168.230.113"
 REMOTE_DIR="/home/raspberrypi/CargoBuddy" # Working directory to receive files
 
 for FILE in "${LOCAL_FILES[@]}"; do
