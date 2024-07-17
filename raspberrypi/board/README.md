@@ -1,4 +1,4 @@
-this files in this folder are the ones stored on the raspberry pi
+this files in this folder are the ones relevant to being stored on the raspberry pi
 
 ## Setup (example) startup service (for `launcher.sh`):
 
@@ -25,7 +25,7 @@ sudo systemctl enable cargobuddy-startup.service
 ```
 
 ## Raspberry Pi 5 Pinout
-![alt text](Raspberry-Pi-5-Pinout.jpg)
+![alt text](assets/Raspberry-Pi-5-Pinout.jpg)
 
 ## Servo
 - connect servo to GPIO 15 (defined in `servo.py`)
