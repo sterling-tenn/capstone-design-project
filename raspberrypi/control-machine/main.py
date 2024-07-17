@@ -18,7 +18,9 @@ class MapUI:
         self.width = width
         self.height = height
 
-        self.canvas.bind("<Button-1>", self.add_point) # Bind left click to add_point function
+        self.cell_size = 5
+        
+        self.canvas.bind("<Button-1>", self.add_point)  # Bind left click to add_point function
 
         self.create_buttons()
 
@@ -46,8 +48,8 @@ class MapUI:
         self.load_button = tk.Button(self.button_frame, text="Load Map", command=self.load_map)
         self.load_button.grid(row=0, column=5)
         
-        self.load_button = tk.Button(self.button_frame, text="Find Path", command=self.find_path)
-        self.load_button.grid(row=0, column=6)
+        self.path_button = tk.Button(self.button_frame, text="Find Path", command=self.find_path)
+        self.path_button.grid(row=0, column=6)
 
     def set_start_position(self):
         self.mode = "start"
@@ -75,15 +77,15 @@ class MapUI:
         if self.mode == "start":
             if self.start_pos:
                 self.canvas.delete(self.start_pos)
-            self.start_pos = self.canvas.create_oval(x-5, y-5, x+5, y+5, fill="green")
+            self.start_pos = self.canvas.create_rectangle(x-self.cell_size, y-self.cell_size, x+self.cell_size, y+self.cell_size, fill="green")
 
         elif self.mode == "target":
             if self.target_pos:
                 self.canvas.delete(self.target_pos)
-            self.target_pos = self.canvas.create_oval(x-5, y-5, x+5, y+5, fill="red")
+            self.target_pos = self.canvas.create_rectangle(x-self.cell_size, y-self.cell_size, x+self.cell_size, y+self.cell_size, fill="red")
 
         elif self.mode == "obstacle":
-            self.canvas.create_rectangle(x-5, y-5, x+5, y+5, fill="black")
+            self.canvas.create_rectangle(x-self.cell_size, y-self.cell_size, x+self.cell_size, y+self.cell_size, fill="black")
             self.obstacles.append((x, y))
 
     def save_map(self):
@@ -108,17 +110,19 @@ class MapUI:
             messagebox.showinfo("Save Successful", f"Map saved to {file_path}")
 
     def find_path(self):
+        start = tuple(map(int, self.canvas.coords(self.start_pos)[:2]))
+        dest = tuple(map(int, self.canvas.coords(self.target_pos)[:2]))
         
-        start = tuple(self.canvas.coords(self.start_pos)[:2])
-        dest = tuple(self.canvas.coords(self.target_pos)[:2])
-        
-        astar = Astar(self.height, self.width, self.obstacles, start, dest)
+        astar = Astar(self.height, self.width, self.obstacles, start, dest, self.cell_size)
         path = astar.find_path()
         
         print(path)
         
+        if not path:
+            print("path not found via A*")
+        
         for x, y in path:
-            self.canvas.create_oval(x-5, y-5, x+5, y+5, fill="red")
+            self.canvas.create_rectangle(x-self.cell_size, y-self.cell_size, x+self.cell_size, y+self.cell_size, fill="blue")
 
     def load_map(self):
         file_path = filedialog.askopenfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
@@ -128,23 +132,21 @@ class MapUI:
         with open(file_path, 'r') as file:
             map_data = json.load(file)
 
-        self.clear() # Clear the canvas before loading the map
+        self.clear()
 
         start_coords = map_data['start']
         target_coords = map_data['target']
         obstacles_coords = map_data['obstacles']
 
-        self.start_pos = self.canvas.create_oval(start_coords[0]-5, start_coords[1]-5, start_coords[0]+5, start_coords[1]+5, fill="green")
-        self.target_pos = self.canvas.create_oval(target_coords[0]-5, target_coords[1]-5, target_coords[0]+5, target_coords[1]+5, fill="red")
+        self.start_pos = self.canvas.create_rectangle(start_coords[0]-self.cell_size, start_coords[1]-self.cell_size, start_coords[0]+self.cell_size, start_coords[1]+self.cell_size, fill="green")
+        self.target_pos = self.canvas.create_rectangle(target_coords[0]-self.cell_size, target_coords[1]-self.cell_size, target_coords[0]+self.cell_size, target_coords[1]+self.cell_size, fill="red")
 
         for x, y in obstacles_coords:
-            self.canvas.create_rectangle(x-5, y-5, x+5, y+5, fill="black")
+            self.canvas.create_rectangle(x-self.cell_size, y-self.cell_size, x+self.cell_size, y+self.cell_size, fill="black")
             self.obstacles.append((x, y))
 
         self.root.title("Particle Filter Map Builder [Map Loaded]")
         messagebox.showinfo("Load Successful", f"Map loaded from {file_path}")
-        
-    
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -152,6 +154,6 @@ if __name__ == "__main__":
         root=root,
         width=500,
         height=500
-        )
+    )
     
     root.mainloop()

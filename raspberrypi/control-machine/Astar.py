@@ -2,7 +2,7 @@ import heapq
 import math
 
 class Astar:
-    def __init__(self, row, col, obstacles, start, dest):
+    def __init__(self, row, col, obstacles, start, dest, cell_size):
         self.row = row
         self.col = col        
         self.start = start
@@ -11,10 +11,11 @@ class Astar:
         
         self.g_score = {}
         self.f_score = {}
-        self.open = heapq.heapify([])
+        self.open = []
         self.closed = set()
         
-        # TODO
+        self.cell_size = cell_size
+        
         self.came_from = {}
         
     def euclidean_distance(self, curr, dest):
@@ -35,24 +36,31 @@ class Astar:
         path.reverse()
         return path
     
+    def is_obstacle(self, r, c):
+        for obstacle in self.obstacles:
+            ox, oy = obstacle
+            if ox <= c < ox + self.cell_size and oy <= r < oy + self.cell_size:
+                return True
+        return False
     
     def available_neighbors(self, curr):
         # down, right, up, left
         # no diagonals
         
-        dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+        dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         r, c = curr
         
         neighbors = []
         
         for rdir, cdir in dirs:
-            ccal = c - cdir
-            rcal = r - rdir
+            rcal = r + rdir * self.cell_size
+            ccal = c + cdir * self.cell_size
             
             if (
-                ccal in range(self.col)
-                and rcal in range(self.row)
-                and curr not in self.obstacles
+                0 <= ccal < self.col * self.cell_size and
+                0 <= rcal < self.row * self.cell_size and
+                # not self.is_obstacle(rcal, ccal) and
+                (rcal, ccal) not in self.closed
             ):
                 neighbors.append((rcal, ccal))
                 
@@ -72,30 +80,20 @@ class Astar:
         while minheap:
             curr = heapq.heappop(minheap)[1]
             
+            self.closed.add(curr)
+            
             if curr == self.dest:
                 return self.reconstruct_path(curr)
             
             neighbors = self.available_neighbors(curr)
             
-            neighbors_cost = self.g_score[curr] + 1
+            neighbors_cost = self.g_score[curr] + self.cell_size
             
             for neighbor in neighbors:
-                if neighbor not in self.f_score:
-                    self.f_score[neighbor] = self.euclidean_distance(curr, self.dest)
-                
                 if neighbor not in self.g_score or self.g_score[neighbor] > neighbors_cost:
                     self.came_from[neighbor] = curr
                     self.g_score[neighbor] = neighbors_cost
-                    final_cost = self.f_score[neighbor] + self.g_score[neighbor]
-                    heapq.heappush(minheap, (final_cost, neighbor))
+                    self.f_score[neighbor] = self.euclidean_distance(neighbor, self.dest) + self.g_score[neighbor]
+                    heapq.heappush(minheap, (self.f_score[neighbor], neighbor))
                     
         return []
-                    
-                    
-            
-
-        
-    
-    
-        
-
