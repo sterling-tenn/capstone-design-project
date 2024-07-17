@@ -10,40 +10,42 @@ FORWARD = 1
 BACKWARD = -1
 STOP_TIME = 0.5 # how long we should stop between movements
 
-SERVO_FACTOR = 0.2 # adjust so we can calculate time to move specified certain distance
-TURNING_FACTOR = 72 # adjust so we can calculate time to turn specified angle
+SERVO_FACTOR = 7.5 # adjust so we can calculate time to move specified certain distance
+TURNING_FACTOR = 90 / 1.3 # adjust so we can calculate time to turn specified angle
 
+# estimated distance in metres
 def move_forward(distance):
     left_servo.value = FORWARD
     right_servo.value = BACKWARD
 
-    time.sleep(distance / SERVO_FACTOR)
+    time.sleep(distance * SERVO_FACTOR)
     stop(STOP_TIME)
 
+# estimated distance in metres
 def move_backward(distance):
     left_servo.value = BACKWARD
     right_servo.value = FORWARD
 
-    time.sleep(distance / SERVO_FACTOR)
+    time.sleep(distance * SERVO_FACTOR)
     stop(STOP_TIME)
 
 # counter clockwise
-def turn_left(angle):
+# estimated degrees to turn
+def turn_left(degrees):
     left_servo.value = BACKWARD
     right_servo.value = BACKWARD
 
-    # t = angle / TURNING_FACTOR
-
-    time.sleep(1.25)
+    time.sleep(degrees / TURNING_FACTOR)
     stop(STOP_TIME)
 
 # clockwise
-# def turn_right(angle):
-#     left_servo.value = FORWARD
-#     right_servo.value = FORWARD
+# estimated degrees to turn
+def turn_right(degrees):
+    left_servo.value = FORWARD
+    right_servo.value = FORWARD
 
-#     time.sleep()
-#     stop(STOP_TIME)
+    time.sleep(degrees / TURNING_FACTOR)
+    stop(STOP_TIME)
 
 def stop(t):
     left_servo.detach()
@@ -58,10 +60,7 @@ def main():
     try:
         input("Press Enter to start the automatic movement sequence")
         while True:
-            # move_forward(1)
-            # move_backward(1)
-            turn_left(90)
-            # turn_right(3)
+            move_forward(1)      
             stop(2)
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting...")
