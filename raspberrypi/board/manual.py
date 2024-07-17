@@ -20,12 +20,12 @@ def move_backward():
     right_servo.value = FORWARD
 
 # counter clockwise
-def move_left():
+def turn_left():
     left_servo.value = BACKWARD
     right_servo.value = BACKWARD
 
 # clockwise
-def move_right():
+def turn_right():
     left_servo.value = FORWARD
     right_servo.value = FORWARD
 
@@ -56,10 +56,10 @@ def main():
             move_backward()
         elif char == 'a':
             print("Turning Left")
-            move_left()
+            turn_left()
         elif char == 'd':
             print("Turning Right")
-            move_right()
+            turn_right()
         elif char == 't':
             print("Stopping")
             stop()
