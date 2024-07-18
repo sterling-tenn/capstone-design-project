@@ -2,19 +2,17 @@ import heapq
 import math
 
 class Astar:
-    def __init__(self, row, col, obstacles, start, dest, cell_size):
+    def __init__(self, row, col, obstacles, start, dest):
         self.row = row
-        self.col = col        
+        self.col = col
         self.start = start
         self.dest = dest
-        self.obstacles = set(tuple(obstacle) for obstacle in obstacles)
+        self.obstacles = set(obstacles)
         
         self.g_score = {}
         self.f_score = {}
         self.open = []
         self.closed = set()
-        
-        self.cell_size = cell_size
         
         self.came_from = {}
         
@@ -37,11 +35,7 @@ class Astar:
         return path
     
     def is_obstacle(self, r, c):
-        for obstacle in self.obstacles:
-            ox, oy = obstacle
-            if ox <= c < ox + self.cell_size and oy <= r < oy + self.cell_size:
-                return True
-        return False
+        return (r, c) in self.obstacles
     
     def available_neighbors(self, curr):
         # down, right, up, left
@@ -53,13 +47,13 @@ class Astar:
         neighbors = []
         
         for rdir, cdir in dirs:
-            rcal = r + rdir * self.cell_size
-            ccal = c + cdir * self.cell_size
+            rcal = r + rdir
+            ccal = c + cdir
             
             if (
-                0 <= ccal < self.col * self.cell_size and
-                0 <= rcal < self.row * self.cell_size and
-                # not self.is_obstacle(rcal, ccal) and
+                0 <= ccal < self.col and
+                0 <= rcal < self.row and
+                not self.is_obstacle(rcal, ccal) and
                 (rcal, ccal) not in self.closed
             ):
                 neighbors.append((rcal, ccal))
@@ -87,7 +81,7 @@ class Astar:
             
             neighbors = self.available_neighbors(curr)
             
-            neighbors_cost = self.g_score[curr] + self.cell_size
+            neighbors_cost = self.g_score[curr] + 1
             
             for neighbor in neighbors:
                 if neighbor not in self.g_score or self.g_score[neighbor] > neighbors_cost:
@@ -97,3 +91,4 @@ class Astar:
                     heapq.heappush(minheap, (self.f_score[neighbor], neighbor))
                     
         return []
+
