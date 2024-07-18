@@ -1,15 +1,35 @@
+# RASPBERRY PI 5: TESTING SERVO MOTOR WITH GPIOZERO, THIS WORKS
+
 from gpiozero import Servo
 from time import sleep
 
-servo = Servo(25)
-val = -1
+servo = Servo(17) # GPIO 17, physical pin 11
 
 try:
-	while True:
-		servo.value = val
-		sleep(0.1)
-		val = val + 0.1
-		if val > 1:
-			val = -1
+    while True:
+        print("Moving to min position...")
+        servo.min()
+        sleep(2) # Hold for 2 seconds
+
+        print("Stopping...")
+        servo.detach()
+        sleep(2)
+
+        print("Mid speed")
+        servo.mid()
+        sleep(2)
+
+        print("Stopping...")
+        servo.detach()
+        sleep(2)
+
+        print("Moving to max position...")
+        servo.max()
+        sleep(2)
+
+        print("Stopping...")
+        servo.detach()
+        sleep(2)
 except KeyboardInterrupt:
-	print("Program stopped")
+    servo.detach()
+    print("Servo stopped and cleaned up.")
