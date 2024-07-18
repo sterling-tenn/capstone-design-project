@@ -39,18 +39,20 @@ class MapUI:
         self.draw_grid()
 
     def create_buttons(self):
+        
+        # TODO: make the UI look nicer....
         self.button_frame = tk.Frame(self.root)
         self.button_frame.pack()
 
         self.mode = None
 
-        self.start_button = tk.Button(self.button_frame, text="Set Start Position", command=self.set_start_position)
+        self.start_button = tk.Button(self.button_frame, text="Set Start", command=self.set_start_position)
         self.start_button.grid(row=0, column=0)
 
-        self.target_button = tk.Button(self.button_frame, text="Set Target Position", command=self.set_target_position)
+        self.target_button = tk.Button(self.button_frame, text="Set Target", command=self.set_target_position)
         self.target_button.grid(row=0, column=1)
 
-        self.obstacle_button = tk.Button(self.button_frame, text="Add Obstacles", command=self.add_obstacle)
+        self.obstacle_button = tk.Button(self.button_frame, text="Set Obstacles", command=self.add_obstacle)
         self.obstacle_button.grid(row=0, column=2)
 
         self.clear_button = tk.Button(self.button_frame, text="Clear", command=self.clear)
@@ -67,6 +69,7 @@ class MapUI:
 
         self.maze_button = tk.Button(self.button_frame, text="Build Maze", command=self.build_maze)
         self.maze_button.grid(row=0, column=7)
+
 
     def set_start_position(self):
         self.mode = "start"
@@ -168,8 +171,6 @@ class MapUI:
         
         astar = Astar(self.grid_height, self.grid_width, self.obstacles, start, dest)
         path = astar.find_path()
-        
-        print(path)
         
         if not path:
             print("path not found via A*")
