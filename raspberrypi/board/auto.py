@@ -2,6 +2,7 @@
 import time
 from gpiozero import Servo, DistanceSensor
 import threading
+import json
 
 # Set GPIO for ultrasonic sensor
 sensor = DistanceSensor(trigger=23, echo=24)  # physical pins 16, 18
@@ -61,6 +62,25 @@ def read_sensor(sensor, stop_event):
         distance = sensor.distance * 100  # convert to cm
         print(f"Distance: {distance:.2f} cm")
         time.sleep(0.5)
+        
+def move_robot():
+    with open("./pathfile/path.json", "r") as file:
+        data = json.load(file)
+        directions = data["directions"]
+
+    # orientation and path to follow taken 
+    # care of in the json direction file
+    # here, we just move
+    for direction in directions:
+        if direction == "L":
+            print("Turning left")
+            turn_left(90)
+        elif direction == "R":
+            print("Turning left")
+            turn_right(90)
+        elif direction == "F":
+            print("Moving forward")
+            move_forward(1)
 
 def main():
     # stop servos on program start
@@ -76,8 +96,8 @@ def main():
         sensor_thread.start()
 
         while True:
-            move_forward(1)      
-            stop(2)
+            move_robot()
+            
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting...")
     finally:
