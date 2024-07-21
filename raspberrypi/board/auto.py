@@ -81,6 +81,8 @@ def move_robot():
         elif direction == "F":
             print("Moving forward")
             move_forward(1)
+            
+        stop(2)
 
 def main():
     # stop servos on program start
