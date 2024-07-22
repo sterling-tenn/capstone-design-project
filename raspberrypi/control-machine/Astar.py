@@ -15,6 +15,8 @@ class Astar:
         self.closed = set()
         self.open = []
 
+        # TODO: initially, we are just going to assume initial north bearing
+        self.orientation = "N"
         self.came_from = {}
 
         self.path = []
@@ -116,7 +118,10 @@ class Astar:
             print("Path is not defined, invoke find path function")
             return
 
-        # give instructions of going l, r, u, d to follow path
+        # Orientation mapping
+        # from North, a left turn means we go west for example
+        left_turns = {"N": "W", "W": "S", "S": "E", "E": "N"}
+        right_turns = {"N": "E", "E": "S", "S": "W", "W": "N"}
 
         directions = []
 
@@ -125,12 +130,32 @@ class Astar:
             next_x, next_y = self.path[i + 1]
 
             if cur_x < next_x:
-                directions.append("R")
+                desired_orientation = "E"
             elif cur_x > next_x:
-                directions.append("L")
+                desired_orientation = "W"
             elif cur_y < next_y:
-                directions.append("D")
+                desired_orientation = "S"
             elif cur_y > next_y:
-                directions.append("U")
+                desired_orientation = "N"
+
+            # Adjust orientation to the desired one
+            while self.orientation != desired_orientation:
+
+                one_left_from_desired = (
+                    self.orientation == left_turns[desired_orientation]
+                )
+                two_rights_from_desired = (
+                    self.orientation == right_turns[right_turns[desired_orientation]]
+                )
+
+                if one_left_from_desired or two_rights_from_desired:
+                    directions.append("R")
+                    self.orientation = right_turns[self.orientation]
+                else:
+                    directions.append("L")
+                    self.orientation = left_turns[self.orientation]
+
+            # Move forward
+            directions.append("F")
 
         return directions
