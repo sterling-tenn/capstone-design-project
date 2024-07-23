@@ -13,3 +13,5 @@ ECHO_PIN_LEFT = 6 # GPIO 6, physical pin 31
 
 TRIGGER_PIN_RIGHT = 13 # GPIO 13, physical pin 33
 ECHO_PIN_RIGHT = 19 # GPIO 19, physical pin 35
+
+STOP_DISTANCE = 20 # in cm, stop if sensors detect an object within this distance

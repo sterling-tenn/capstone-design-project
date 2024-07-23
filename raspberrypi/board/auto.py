@@ -61,17 +61,23 @@ def read_sensors(sensors, stop_event):
         l = left.distance * 100
         r = right.distance * 100
         print(f"[Distances] Left: {l:.2f} cm | Centre: {c:.2f} cm | Right: {r:.2f} cm")
+
+        if c < STOP_DISTANCE or l < STOP_DISTANCE or r < STOP_DISTANCE:
+            print("Obstacle detected! Stopping the robot.")
+            stop()
+            stop_event.set()  # This will stop the sensor thread
+
         time.sleep(0.1)
 
-def move_robot():
+def move_robot(stop_event):
     with open("path.json", "r") as file:
         data = json.load(file)
         directions = data["directions"]
 
-    # orientation and path to follow taken
-    # care of in the json direction file
-    # here, we just move
     for direction in directions:
+        if stop_event.is_set():
+            break
+
         if direction == "L":
             print("Turning left")
             turn_left(90)
@@ -96,16 +102,13 @@ def main():
         sensor_thread = threading.Thread(target=read_sensors, args=(sensors, stop_event))
         sensor_thread.start()
 
-        move_robot()
-        # while True:
-        #     time.sleep(1)
+        move_robot(stop_event)
 
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting...")
     finally:
         # stop servos on program completion
-        left_servo.detach()
-        right_servo.detach()
+        stop()
         
         # close sensors and sensor thread
         sensor_centre.close()
