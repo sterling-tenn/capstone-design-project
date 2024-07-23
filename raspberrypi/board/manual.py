@@ -8,7 +8,9 @@ import time
 from conf import *
 
 # Set GPIO for ultrasonic sensor
-sensor = DistanceSensor(trigger=23, echo=24)  # physical pins 16, 18
+sensor_centre = DistanceSensor(trigger=TRIGGER_PIN_CENTRE, echo=ECHO_PIN_CENTRE)
+sensor_left = DistanceSensor(trigger=TRIGGER_PIN_LEFT, echo=ECHO_PIN_LEFT)
+sensor_right = DistanceSensor(trigger=TRIGGER_PIN_RIGHT, echo=ECHO_PIN_RIGHT)
 
 # Set GPIO for servos
 left_servo = Servo(LEFT_SERVO_PIN)
@@ -50,16 +52,21 @@ def getch():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
 
-def read_sensor(sensor, stop_event):
+def read_sensors(sensors, stop_event):
     while not stop_event.is_set():
-        distance = sensor.distance * 100  # convert to cm
-        print(f"Distance: {distance:.2f} cm")
-        time.sleep(0.5)
+        centre, left, right = sensors
+        c = centre.distance * 100  # convert to cm
+        l = left.distance * 100
+        r = right.distance * 100
+        print(f"[Distances] Left: {l:.2f} cm | Centre: {c:.2f} cm | Right: {r:.2f} cm")
+
+        time.sleep(0.1)
 
 def main():
-    # to constantly read sensor in a separate thread
+    # to constantly read sensors in a separate thread
     stop_event = threading.Event()
-    sensor_thread = threading.Thread(target=read_sensor, args=(sensor, stop_event))
+    sensors = [sensor_centre, sensor_left, sensor_right]
+    sensor_thread = threading.Thread(target=read_sensors, args=(sensors, stop_event))
     sensor_thread.start()
     
     stop()  # stop servos on program start
@@ -91,8 +98,10 @@ def main():
         # stop servos on program completion
         stop()
 
-        # close sensor and sensor thread
-        sensor.close()
+        # close sensors and sensor thread
+        sensor_centre.close()
+        sensor_left.close()
+        sensor_right.close()
         stop_event.set()
         sensor_thread.join()
 

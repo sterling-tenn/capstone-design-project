@@ -86,7 +86,7 @@ def move_robot(stop_event):
             turn_right(90)
         elif direction == "F":
             print("Moving forward")
-            move_forward(0.3)
+            move_forward(BLOCK_SIZE)
 
 def main():
     # stop servos on program start

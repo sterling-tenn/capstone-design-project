@@ -15,3 +15,5 @@ TRIGGER_PIN_RIGHT = 13 # GPIO 13, physical pin 33
 ECHO_PIN_RIGHT = 19 # GPIO 19, physical pin 35
 
 STOP_DISTANCE = 20 # in cm, stop if sensors detect an object within this distance
+
+BLOCK_SIZE = 0.25 # in m, size of a block on the grid/map
