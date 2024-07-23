@@ -5,13 +5,14 @@ import sys
 import termios
 import tty
 import time
+from conf import *
 
 # Set GPIO for ultrasonic sensor
 sensor = DistanceSensor(trigger=23, echo=24)  # physical pins 16, 18
 
 # Set GPIO for servos
-left_servo = Servo(27) # GPIO 27, physical pin 13
-right_servo = Servo(17) # GPIO 17, physical pin 11
+left_servo = Servo(LEFT_SERVO_PIN)
+right_servo = Servo(RIGHT_SERVO_PIN)
 
 FORWARD = 1
 BACKWARD = -1
