@@ -15,7 +15,7 @@ LOCAL_FILES=(
             )
 
 REMOTE_USER="raspberrypi"
-REMOTE_HOST="192.168.137.239"
+REMOTE_HOST="192.168.137.176"
 REMOTE_DIR="/home/raspberrypi/CargoBuddy" # Working directory to receive files
 
 for FILE in "${LOCAL_FILES[@]}"; do
