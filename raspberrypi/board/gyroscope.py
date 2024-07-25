@@ -1,5 +1,6 @@
 # MPU6050 gyroscope/accelerometer
 # https://docs.sunfounder.com/projects/raphael-kit/en/latest/python_pi5/pi5_2.2.9_mpu6050_module_python.html
+# remember to enable I2C: https://github.com/johnbryanmoore/VL53L0X_rasp_python/issues/13
 
 # V_cc = 3.3V (physical pin 1)
 # GND = GND (physical pin 6)
