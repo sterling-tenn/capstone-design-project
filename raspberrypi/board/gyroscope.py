@@ -1,99 +1,117 @@
-# MPU6050 gyroscope/accelerometer
-# https://docs.sunfounder.com/projects/raphael-kit/en/latest/python_pi5/pi5_2.2.9_mpu6050_module_python.html
-# remember to enable I2C: https://github.com/johnbryanmoore/VL53L0X_rasp_python/issues/13
+from smbus2 import SMBus
+import math as m
+import numpy as np
+import time as t
 
-# V_cc = 3.3V (physical pin 1)
-# GND = GND (physical pin 6)
-# SDA = SDA (physical pin 3 / GPIO 2)
-# SCL = SCL (physical pin 5 / GPIO 3)
+class Gyro:
 
-import smbus
-import math
-import time
+    def __init__(self) -> None:
+        # Power management registers
+        self.power_mgmt_1 = 0x6b
+        self.power_mgmt_2 = 0x6c
 
-# Power management registers
-power_mgmt_1 = 0x6b
-power_mgmt_2 = 0x6c
+        # This is the address value read via the i2cdetect command
+        self.address = 0x68         
 
-def read_byte(adr):
-    return bus.read_byte_data(address, adr)
+        # The gyroscope output data registers
+        self.gyro_xout_addr = 0x43
+        self.gyro_yout_addr = 0x45
+        self.gyro_zout_addr = 0x47
 
-def read_word(adr):
-    high = bus.read_byte_data(address, adr)
-    low = bus.read_byte_data(address, adr+1)
-    val = (high << 8) + low
-    return val
+        # The accelerometer output data registers
+        self.accel_xout_addr = 0x3b
+        self.accel_yout_addr = 0x3d
+        self.accel_zout_addr = 0x3f
 
-def read_word_2c(adr):
-    val = read_word(adr)
-    if (val >= 0x8000):
-        return -((65535 - val) + 1)
-    else:
+        # SMBus init
+        self.bus = SMBus(1)
+        # Now wake the 6050 up as it starts in sleep mode
+        self.bus.write_byte_data(self.address, self.power_mgmt_1, 0)    
+
+    def read_byte(self, adr):
+        return self.bus.read_byte_data(self.address, adr)
+
+    def read_word(self, adr):
+        high = self.bus.read_byte_data(self.address, adr)
+        low = self.bus.read_byte_data(self.address, adr+1)
+        val = (high << 8) + low
         return val
 
-def dist(a, b):
-    return math.sqrt((a*a)+(b*b))
+    def read_word_2c(self, adr):
+        val = self.read_word(adr)
+        if (val >= 0x8000):
+            return -((65535 - val) + 1)
+        else:
+            return val
 
-def get_y_rotation(x, y, z):
-    radians = math.atan2(x, dist(y, z))
-    return -math.degrees(radians)
+    def dist(self, a, b):
+        return m.sqrt((a*a)+(b*b))
 
-def get_x_rotation(x, y, z):
-    radians = math.atan2(y, dist(x, z))
-    return math.degrees(radians)
+    def get_y_rotation(self, x, y, z):
+        radians = m.atan2(x, self.dist(y, z))
+        return -m.degrees(radians)
 
-bus = smbus.SMBus(1) # or bus = smbus.SMBus(1) for Revision 2 boards
-address = 0x68       # This is the address value read via the i2cdetect command
+    def get_x_rotation(self, x, y, z):
+        radians = m.atan2(y, self.dist(x, z))
+        return m.degrees(radians)
 
-# Now wake the 6050 up as it starts in sleep mode
-bus.write_byte_data(address, power_mgmt_1, 0)
+    def get_accel_out(self):
+        xout = self.read_word_2c(self.accel_xout_addr)
+        yout = self.read_word_2c(self.accel_yout_addr)
+        zout = self.read_word_2c(self.accel_zout_addr)
+        return np.array([xout, yout, zout])
+    
+    def get_gyro_out(self):
+        xout = self.read_word_2c(self.gyro_xout_addr)
+        yout = self.read_word_2c(self.gyro_yout_addr)
+        zout = self.read_word_2c(self.gyro_zout_addr)
+        return np.array([xout, yout, zout])
+    
+    def get_accel_scaled(self):
+        # Convert to m/s^2 assuming the scale factor is 16384 LSB/g
+        return self.get_accel_out() * 9.80665 / 16384.0
+
+    def get_gyro_scaled(self):
+        # Convert to degrees per second assuming the scale factor is 131 LSB/(°/s)
+        return self.get_gyro_out() / 131.0
+    
+
+gyro = Gyro()
 
 while True:
-    time.sleep(0.1)
     print("=================================================")
     
-    # Read gyroscope data
-    gyro_xout = read_word_2c(0x43)
-    gyro_yout = read_word_2c(0x45)
-    gyro_zout = read_word_2c(0x47)
+    # Get scaled gyro data
+    gyro_scaled = gyro.get_gyro_scaled()
+    gyro_xout_scaled = gyro_scaled[0]
+    gyro_yout_scaled = gyro_scaled[1]
+    gyro_zout_scaled = gyro_scaled[2]
+
+    # Get scaled accelerometer data
+    accel_scaled = gyro.get_accel_scaled()
+    accel_xout_scaled = accel_scaled[0]
+    accel_yout_scaled = accel_scaled[1]
+    accel_zout_scaled = accel_scaled[2]
+
+    # Calculate rotations
+    x_rotation = gyro.get_x_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
+    y_rotation = gyro.get_y_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
     
-    # Gyroscope data (degrees per second)
-    gyro_xout_scaled = gyro_xout / 131
-    gyro_yout_scaled = gyro_yout / 131
-    gyro_zout_scaled = gyro_zout / 131
-    
-    print(f"Gyroscope data:")
-    # print(f"  X: {gyro_xout} raw, {gyro_xout_scaled:.2f} deg/s")
-    # print(f"  Y: {gyro_yout} raw, {gyro_yout_scaled:.2f} deg/s")
-    # print(f"  Z: {gyro_zout} raw, {gyro_zout_scaled:.2f} deg/s")
+    # Print gyroscope data
+    print("Gyroscope data:")
     print(f"  X: {gyro_xout_scaled:.2f} deg/s")
     print(f"  Y: {gyro_yout_scaled:.2f} deg/s")
     print(f"  Z: {gyro_zout_scaled:.2f} deg/s")
 
-    # Read accelerometer data
-    accel_xout = read_word_2c(0x3b)
-    accel_yout = read_word_2c(0x3d)
-    accel_zout = read_word_2c(0x3f)
+    # Print accelerometer data
+    print("Accelerometer data:")
+    print(f"  X: {accel_xout_scaled:.4f} m/s^2")
+    print(f"  Y: {accel_yout_scaled:.4f} m/s^2")
+    print(f"  Z: {accel_zout_scaled:.4f} m/s^2")
     
-    # Accelerometer data (g-forces)
-    accel_xout_scaled = accel_xout / 16384.0
-    accel_yout_scaled = accel_yout / 16384.0
-    accel_zout_scaled = accel_zout / 16384.0
-    
-    print(f"Accelerometer data:")
-    # print(f"  X: {accel_xout} raw, {accel_xout_scaled:.4f} g")
-    # print(f"  Y: {accel_yout} raw, {accel_yout_scaled:.4f} g")
-    # print(f"  Z: {accel_zout} raw, {accel_zout_scaled:.4f} g")
-    print(f"  X: {accel_xout_scaled:.4f} g")
-    print(f"  Y: {accel_yout_scaled:.4f} g")
-    print(f"  Z: {accel_zout_scaled:.4f} g")
-    
-    # Calculate rotation
-    x_rotation = get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
-    y_rotation = get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
-    
-    print(f"Rotation (in degrees):")
+    # Print rotation data
+    print("Rotation (in degrees):")
     print(f"  X: {x_rotation:.2f}")
     print(f"  Y: {y_rotation:.2f}")
     
-    # time.sleep(1)
+    t.sleep(1)

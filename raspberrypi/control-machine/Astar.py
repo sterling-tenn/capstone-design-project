@@ -29,6 +29,15 @@ class Astar:
         delta_y = dest_y - y
 
         return math.sqrt(delta_x**2 + delta_y**2)
+    
+    def manhattan_distance(self, curr, dest):
+        x, y = curr
+        dest_x, dest_y = dest
+
+        delta_x = dest_x - x
+        delta_y = dest_y - y
+
+        return delta_x + delta_y
 
     def reconstruct_path(self, current):
         path = [current]
