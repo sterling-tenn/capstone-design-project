@@ -1,51 +1,83 @@
 import numpy as np
 import time as t
-from threading import Thread
+from threading import Thread, Lock
 from gyroscope import Gyro 
 
 class DistanceTracker:
 
     def __init__(self) -> None:
         self.gyro = Gyro()
+        self.lock = Lock()
+        self.reset = False
+        self.integration_method = self.simpsons_rule  # Default to Simpson's rule
+
+    def simpsons_rule(self, accelerations, time_diffs) -> np.ndarray:
+        h = time_diffs[-1] + time_diffs[-2]
+        return (h / 6.0) * (accelerations[-3] + 4 * accelerations[-2] + accelerations[-1])
+
+    def trapezoidal_rule(self, accelerations, time_diffs) -> np.ndarray:
+        h = time_diffs[-1]
+        return h * (accelerations[-2] + accelerations[-1]) / 2.0
+
+    def midpoint_rule(self, accelerations, time_diffs) -> np.ndarray:
+        h = time_diffs[-1]
+        return h * accelerations[-2]
+
+    def rectangular_rule(self, accelerations, time_diffs) -> np.ndarray:
+        h = time_diffs[-1]
+        return h * accelerations[-1]
+
+    def booles_rule(self, accelerations, time_diffs) -> np.ndarray:
+        h = time_diffs[-1] + time_diffs[-2] + time_diffs[-3] + time_diffs[-4]
+        return (2 * h / 45) * (7 * accelerations[-5] + 32 * accelerations[-4] + 12 * accelerations[-3] + 32 * accelerations[-2] + 7 * accelerations[-1])
 
     def distance_tracker(self) -> None:
-        while not self.reset:
-            current_time = t.time_ns()
-            time_diff = (current_time - self.prev_time) * 1e-9  # convert nanoseconds to seconds
-            current_accel = self.gyro.get_accel_scaled()
+        while True:
+            with self.lock:
+                if self.reset:
+                    break
 
-            if len(self.accelerations) < 3:
-                self.accelerations.append(current_accel)
-                self.time_diffs.append(time_diff)
-            else:
-                # Simpson's rule
-                h = self.time_diffs[-1] + self.time_diffs[-2]  # Total time interval
-                velocity_increment = (h / 6.0) * (self.accelerations[-3] + 4 * self.accelerations[-2] + self.accelerations[-1])
-                self.velocity += velocity_increment
-                displacement_increment = (h / 6.0) * (self.velocity * self.time_diffs[-1])
-                self.displacement += displacement_increment
+                current_time = t.time_ns()
+                time_diff = (current_time - self.prev_time) * 1e-9  # Convert nanoseconds to seconds
+                current_accel = self.gyro.get_accel_scaled()
 
-                self.accelerations = self.accelerations[1:] + [current_accel]
-                self.time_diffs = self.time_diffs[1:] + [time_diff]
+                if len(self.accelerations) < 5:
+                    self.accelerations.append(current_accel)
+                    self.time_diffs.append(time_diff)
+                else:
+                    velocity_increment = self.integration_method(self.accelerations, self.time_diffs)
+                    self.velocity += velocity_increment
+                    displacement_increment = self.velocity * time_diff
+                    self.displacement += displacement_increment
+                    self.accelerations = self.accelerations[1:] + [current_accel]
+                    self.time_diffs = self.time_diffs[1:] + [time_diff]
 
-            self.prev_time = current_time
+                self.prev_time = current_time
 
     def start(self) -> None:
-        self.velocity = np.array([0.0, 0.0, 0.0])
-        self.displacement = np.array([0.0, 0.0, 0.0])
-        self.prev_time = t.time_ns()
-        self.reset = False
-        self.accelerations = []
-        self.time_diffs = []
-        self.thread = Thread(target=self.distance_tracker, daemon=True)
-        self.thread.start()
+        with self.lock:
+            self.velocity = np.array([0.0, 0.0, 0.0])
+            self.displacement = np.array([0.0, 0.0, 0.0])
+            self.prev_time = t.time_ns()
+            self.reset = False
+            self.accelerations = []
+            self.time_diffs = []
+            self.thread = Thread(target=self.distance_tracker, daemon=True)
+            self.thread.start()
 
     def finish(self) -> None:
-        self.reset = True
+        with self.lock:
+            self.reset = True
         self.thread.join()
 
     def get_displacement(self) -> np.ndarray:
-        return self.displacement
+        with self.lock:
+            return self.displacement.copy()
 
     def get_velocity(self) -> np.ndarray:
-        return self.velocity
+        with self.lock:
+            return self.velocity.copy()
+
+    def set_integration_method(self, method) -> None:
+        with self.lock:
+            self.integration_method = method
