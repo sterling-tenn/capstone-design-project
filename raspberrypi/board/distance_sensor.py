@@ -5,6 +5,7 @@ import conf as conf
 import threading
 
 class DistSensor:
+
     def __init__(self, trigger_pin, echo_pin, name="Sensor"):
         self.myfactory = PiGPIOFactory()
         self.sensor = DistanceSensor(trigger=trigger_pin, echo=echo_pin, pin_factory=self.myfactory)
@@ -25,7 +26,7 @@ class DistSensor:
                     self._collision_event.set()  # Signal that a collision is detected
                 else:
                     self._collision_event.clear()  # No collision
-            time.sleep(0.1)  # Adjust the sleep duration as needed
+            time.sleep(conf.TIME_DELTA)  # Adjust the sleep duration as needed
 
     def get_distance(self) -> float:
         # Returns the last measured distance from the sensor in centimeters.

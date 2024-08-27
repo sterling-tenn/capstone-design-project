@@ -1,4 +1,4 @@
 from robot_controller import RobotController
 
 controller = RobotController()
-controller.run(1)
+controller.run('auto')

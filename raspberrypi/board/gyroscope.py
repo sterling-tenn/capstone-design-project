@@ -126,4 +126,4 @@ while True:
     print("Temperature (in Celsius):")
     print(f"  T: {temp:.2f}")
     
-    t.sleep(1)
+    t.sleep(0.1)

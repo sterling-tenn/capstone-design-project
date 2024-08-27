@@ -26,15 +26,18 @@ class RobotController:
                 self.movement.stop()
                 break
 
-            if direction == "L":
-                print("Turning left")
-                self.movement.turn_left(90)
-            elif direction == "R":
-                print("Turning right")
-                self.movement.turn_right(90)
-            elif direction == "F":
-                print("Moving forward")
-                self.movement.move_forward(conf.BLOCK_SIZE)
+            match direction:
+                case "L":
+                    print("Turning left")
+                    self.movement.turn_left(90)
+                case "R":
+                    print("Turning right")
+                    self.movement.turn_right(90)
+                case "F":
+                    print("Moving forward")
+                    self.movement.move_forward(conf.BLOCK_SIZE)
+                case _:
+                    raise ValueError("Unknown direction.")
 
     def _move_robot_manual(self):
         import sys
@@ -55,33 +58,39 @@ class RobotController:
 
         while True:
             char = getch().lower()
-            if char == 'w':
-                print("Moving Forward")
-                self.movement.move_forward(conf.BLOCK_SIZE)
-            elif char == 's':
-                print("Moving Backward")
-                self.movement.move_backward(conf.BLOCK_SIZE)
-            elif char == 'a':
-                print("Turning Left")
-                self.movement.turn_left(90)
-            elif char == 'd':
-                print("Turning Right")
-                self.movement.turn_right(90)
-            elif char == 't':
-                print("Stopping")
-                self.movement.stop()
-            elif char == 'q':
-                print("Exiting manual mode")
-                break
+            match char:
+                case 'w':
+                    print("Moving Forward")
+                    self.movement.move_forward(conf.BLOCK_SIZE)
+                case 's':
+                    print("Moving Backward")
+                    self.movement.move_backward(conf.BLOCK_SIZE)
+                case 'a':
+                    print("Turning Left")
+                    self.movement.turn_left(90)
+                case 'd':
+                    print("Turning Right")
+                    self.movement.turn_right(90)
+                case 't':
+                    print("Stopping")
+                    self.movement.stop()
+                case 'q':
+                    print("Exiting manual mode")
+                    break
+                case _:
+                    raise ValueError("Unsupported input")
     
     def run(self, mode):
         try:
             input("Press Enter to start the automatic movement sequence")
 
-            if mode == 1:
-                self._move_robot_auto("path.json")
-            elif mode == 2:
-                self._move_robot_manual()
+            match mode:
+                case 'auto':
+                    self._move_robot_auto("path.json")
+                case 'manual':
+                    self._move_robot_manual()
+                case _:
+                    raise ValueError("Unsupported mode")
 
         except KeyboardInterrupt:
             print("\nProgram interrupted by user. Exiting...")
