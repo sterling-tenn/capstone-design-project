@@ -18,3 +18,5 @@ STOP_DISTANCE = 20 # in cm, stop if sensors detect an object within this distanc
 
 BLOCK_SIZE = 0.25 # in m, size of a block on the grid/map
 TIME_DELTA = 0.01 # stall time in sec
+
+WHEEL_CIRCUMFERENCE = 0.1 # circumference of wheels in metres
