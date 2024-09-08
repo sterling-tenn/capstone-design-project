@@ -29,8 +29,8 @@ class Movement:
         self._execute_turn(degrees, self._turn_right_logic)
 
     def stop(self) -> None:
-        self.left_servo.mid()
-        self.right_servo.mid()
+        self.left_servo.detach()
+        self.right_servo.detach()
 
     def _execute_movement(self, distance: float, move_logic) -> None:
         self.distance_tracker.start()
