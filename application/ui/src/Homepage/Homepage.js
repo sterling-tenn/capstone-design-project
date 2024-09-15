@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Row, Col, Card, Typography, Layout, Divider } from 'antd';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { UploadOutlined, ArrowRightOutlined, MobileOutlined, HomeOutlined, SafetyOutlined } from '@ant-design/icons';
 import './Homepage.css';
 
@@ -34,6 +35,8 @@ const staggerContainer = {
 };
 
 const Homepage = () => {
+    const navigate = useNavigate();
+
     return (
         <Layout className="homepage-layout">
             {/* Hero Section */}
@@ -51,7 +54,7 @@ const Homepage = () => {
                         CargoBuddy is an autonomous robot designed to help you move items around your house.
                     </motion.p>
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button type="primary" size="large" icon={<ArrowRightOutlined />} className='get-started-btn'>
+                        <Button type="primary" size="large" icon={<ArrowRightOutlined />} className='get-started-btn' onClick={() => navigate("/upload")}>
                             Get Started
                         </Button>
                     </motion.div>
@@ -76,7 +79,7 @@ const Homepage = () => {
                             <Col xs={24} sm={12} lg={6}>
                                 <motion.div variants={fadeInUp}>
                                     <Card className="feature-card" title="App Controlled" icon={<MobileOutlined style={{ fontSize: "4em" }} />}>
-                                        <p><MobileOutlined /> Control CargoBuddy using our easy-to-use mobile app.</p>
+                                        <p><MobileOutlined /> Control CargoBuddy using our easy-to-use app.</p>
                                     </Card>
                                 </motion.div>
                             </Col>

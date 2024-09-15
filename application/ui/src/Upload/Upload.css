@@ -1,0 +1,32 @@
+/* Center the card on the screen */
+.upload-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Full screen height */
+    padding: 20px;
+    background-color: #f5f5f5;
+    /* Light background color */
+}
+
+.upload-card {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for the preview container */
+.preview-container h3 {
+    color: #007bff;
+}
+
+.preview-container img {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    margin-top: 10px;
+}
