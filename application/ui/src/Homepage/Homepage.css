@@ -1,0 +1,127 @@
+.homepage-layout {
+    background-color: #f4f4f4;
+}
+
+.header {
+    height: 100vh;
+    background: linear-gradient(135deg, #007aff, #00d2ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.hero-content h1 {
+    font-size: 3.5em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.hero-content p {
+    font-size: 1.5em;
+    margin: 20px 0;
+    line-height: 1.5em;
+}
+
+.hero-content .highlight {
+    color: #ffd700;
+}
+
+.hero-images-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.image-wrapper {
+    position: relative;
+}
+
+.get-started-btn {
+    margin-top: 20px;
+}
+
+.content {
+    padding: 20px;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #001529;
+    color: white;
+}
+
+.content {
+    padding: 50px 20px;
+}
+
+.features-section {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.features-row {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.feature-card {
+    min-height: 180px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.feature-card p {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.how-it-works-section {
+    margin-top: 60px;
+    padding: 40px 20px;
+}
+
+.how-it-works-steps {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-around;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.step {
+    text-align: center;
+    padding: 10px;
+}
+
+@media screen and (max-width: 768px) {
+
+    /* Make features and steps stack vertically on smaller screens */
+    .features-row,
+    .how-it-works-steps {
+        flex-direction: column;
+    }
+
+    .feature-card {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .step {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
