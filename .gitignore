@@ -18,3 +18,5 @@ raspberrypi/control-machine/__pycache__
 
 raspberrypi/board/env/
 raspberrypi/board/__pycache__
+
+application/backend/venv/
