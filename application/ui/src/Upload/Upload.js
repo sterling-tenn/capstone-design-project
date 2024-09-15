@@ -99,7 +99,7 @@ const UploadComponent = () => {
                         whileTap={{ scale: 0.95 }}
                         style={{ marginTop: '20px' }}
                     >
-                        <Button type="primary" size="large" icon={<RightOutlined />} onClick={() => message.success('Floorplan uploaded!')}>
+                        <Button type="primary" size="large" icon={<RightOutlined />} onClick={() => message.error('Sorry! Application still under construction.')}>
                             Next
                         </Button>
                     </motion.div>
