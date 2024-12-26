@@ -2,32 +2,35 @@ from smbus2 import SMBus
 import math as m
 import numpy as np
 import time as t
+import conf as conf
 
 class Gyro:
 
-    def __init__(self) -> None:
+    def __init__(self, id) -> None:
+        self.id = id
+
         # Power management registers
-        self.power_mgmt_1 = 0x6b
-        self.power_mgmt_2 = 0x6c
+        self.power_mgmt_1 = conf.PWR_MGMT_1
+        self.power_mgmt_2 = conf.PWR_MGMT_2
 
         # MPU6050 I2C address
-        self.address = 0x68         
+        self.address = conf.GYRO_ADDRESS        
 
         # Gyroscope output data registers
-        self.gyro_xout_addr = 0x43
-        self.gyro_yout_addr = 0x45
-        self.gyro_zout_addr = 0x47
+        self.gyro_xout_addr = conf.GYRO_XOUT_ADDR
+        self.gyro_yout_addr = conf.GYRO_YOUT_ADDR
+        self.gyro_zout_addr = conf.GYRO_ZOUT_ADDR
 
         # Accelerometer output data registers
-        self.accel_xout_addr = 0x3b
-        self.accel_yout_addr = 0x3d
-        self.accel_zout_addr = 0x3f
+        self.accel_xout_addr = conf.ACCEL_XOUT_ADDR
+        self.accel_yout_addr = conf.ACCEL_YOUT_ADDR
+        self.accel_zout_addr = conf.ACCEL_ZOUT_ADDR
 
         # Temperature output data register
-        self.temp_out_addr = 0x41
+        self.temp_out_addr = conf.TEMP_OUT_ADDR
 
         # SMBus initialization
-        self.bus = SMBus(1)
+        self.bus = SMBus(conf.GYRO_SMBUS_NUMBER)
         self.bus.write_byte_data(self.address, self.power_mgmt_1, 0)    
 
     def read_byte(self, adr) -> int:
@@ -81,8 +84,11 @@ class Gyro:
         # Convert to degrees Celsius
         return self.read_word_2c(self.temp_out_addr) / 340.0 + 36.53
 
-gyro = Gyro()
+    def get_id(self) -> int:
+        return self.id
 
+# Run the program to test
+gyro = Gyro()
 while True:
     print("=================================================")
     
