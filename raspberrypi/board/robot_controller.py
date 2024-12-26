@@ -16,6 +16,7 @@ from gyroscope import Gyro
         # OPTIONAL: UPDATE MAP (parallel with particle filter for foreign obstacles)
         # GET BEST NEXT MOVEMENT
         # EXECUTE MOVEMENT
+    # RESET TO NEW PATH
 
 class RobotController:
     def __init__(self):
