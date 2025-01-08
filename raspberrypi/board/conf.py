@@ -32,16 +32,21 @@ TEMP_OUT_ADDR   = 0x41
 
 GYRO_SMBUS_NUMBER = 1
 
-# configuration variables
+# misc variables
 STOP_DISTANCE   = 20 # in cm, stop if sensors detect an object within this distance
 BLOCK_SIZE      = 0.25 # in m, size of a block on the grid/map
 TIME_DELTA      = 0.01 # stall time in sec
 
-WHEEL_CIRCUMFERENCE = 0.1 # circumference of wheels in metres
+# physical constants
+WHEEL_RADIUS            = 0.05 # radius of wheels in metres
+INTERNAL_TURN_RADIUS    = 0.15 # distance between centre and wheels in metres
+ANGULAR_VELOCITY        = 1.0  # wheel/servo angular velocity in rad/s
 
+# particle filter
 SENSOR_SIGMA = 0.05 # standard deviation of sensor noise
 NULL_WEIGHT  = 0.0001
 
+# Sensor IDs
 CENTOR_SENSOR_ID    = 0
 RIGHT_SENSOR_ID     = 1
 LEFT_SENSOR_ID      = 2

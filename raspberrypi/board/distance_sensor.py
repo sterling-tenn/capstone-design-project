@@ -9,7 +9,7 @@ class DistSensor:
         self.myfactory = PiGPIOFactory()
         self.sensor = DistanceSensor(trigger=trigger_pin, echo=echo_pin, pin_factory=self.myfactory)
         self.id = id
-        self._distance = None
+        self._distance = 0.0
         self._collision_event = False
 
     def _read_distances(self) -> None:
@@ -22,14 +22,15 @@ class DistSensor:
 
     def get_distance(self) -> float:
         # Returns the last measured distance from the sensor in centimeters.
-        return self._distance if self._distance is not None else 0.0
+        return self._distance
 
     def collision_detected(self) -> bool:
         # Returns True if a collision is detected.
         return self._collision_event
 
-    def close(self) -> None:
+    def stop(self) -> None:
         # Stop the distance reading thread and close the sensor to free up resources.
+        self._collision_event = True
         self.sensor.close()
 
     def start(self) -> None:    

@@ -7,7 +7,6 @@ class MCLocalization:
         self.num_particles = num_particles
         self._map = map
         self._world_size = map.size
-        self._history = []
         self._particles = self._init_particles(self.num_particles)
 
     def _init_particles(self, num_particles) -> np.ndarray:
@@ -18,9 +17,9 @@ class MCLocalization:
         return particles                      
 
     def _move_particles(self, move):
-        self._particles[:, 0] += move[0] * np.cos(self._particles[:, 2])
-        self._particles[:, 1] += move[0] * np.sin(self._particles[:, 2])
-        self._particles[:, 2] += move[1]
+        self._particles[:, 0] += move[0]
+        self._particles[:, 1] += move[1]
+        self._particles[:, 2] += move[2]
 
         self._particles[:, 0] = np.clip(self._particles[:, 0], 0, self._world_size[0])
         self._particles[:, 1] = np.clip(self._particles[:, 1], 0, self._world_size[1])
@@ -35,7 +34,8 @@ class MCLocalization:
 
             if sensor_id == conf.GYRO_SENSOR_ID:
                 ptheta_values  = self._particles[:, 2]
-                weights = normalization_factor * np.exp(-((ptheta_values - sensor.get_rotation()) ** 2) / (2 * sigma_squared))
+                rotation = sensor.get_x_rotation(*sensor.get_accel_scaled())
+                weights = normalization_factor * np.exp(-((ptheta_values - rotation) ** 2) / (2 * sigma_squared))
 
             else:
                 for idx in range(self.num_particles):
@@ -82,14 +82,9 @@ class MCLocalization:
         return mean_position
 
     def mcl(self, sensors, move):
-        self._move_particles(move)  # Move particles based on control input
+        self._move_particles(move)  # Move particles based on control input | MOVE = [dx, dy, dtheta]
         weights = self._update_particle_weights(sensors)  # Update weights using sensor readings
         self._resample_particles(weights)  # Resample particles based on weights
 
         position_estimate = self._get_position_mean()  # Get the estimated position
-        self._history.append({
-            'particles': self._particles.copy(),  # Store a copy of particles
-            'position_estimate': position_estimate,  # Store the estimated position
-        })
-
         return position_estimate  

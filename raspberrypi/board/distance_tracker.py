@@ -6,8 +6,10 @@ class DistanceTracker:
 
     def __init__(self) -> None:
         self.gyro = Gyro()
-        self._reset = False
-        self._integration_method = self.simpsons_rule
+        self.reset = False
+        self.velocity = np.array([0.0, 0.0, 0.0])
+        self.displacement = np.array([0.0, 0.0, 0.0])
+        self.integration_method = self.simpsons_rule
 
     def simpsons_rule(self, accelerations, time_diffs) -> np.ndarray:
         h = time_diffs[-1] + time_diffs[-2]
@@ -34,32 +36,29 @@ class DistanceTracker:
         time_diff = (current_time - self.prev_time) * 1e-9  # Convert nanoseconds to seconds
         current_accel = self.gyro.get_accel_scaled()
 
-        if len(self.accelerations) < 5:
+        if len(self.accelerations) > 5:
             self.accelerations.append(current_accel)
             self.time_diffs.append(time_diff)
         else:
-            velocity_increment = self._integration_method(self.accelerations, self.time_diffs)
-            self.velocity += velocity_increment
-            displacement_increment = self.velocity * time_diff
-            self.displacement += displacement_increment
             self.accelerations = self.accelerations[1:] + [current_accel]
             self.time_diffs = self.time_diffs[1:] + [time_diff]
+            velocity_increment = self._integration_method(self.accelerations, self.time_diffs)
+            self.velocity += velocity_increment
+            displacement_increment = velocity_increment * time_diff
+            self.displacement += displacement_increment
 
         self.prev_time = current_time
 
     def start(self) -> None:
-        self.velocity = np.array([0.0, 0.0, 0.0])
-        self.displacement = np.array([0.0, 0.0, 0.0])
-        self.prev_time = t.time_ns()
-        self.reset = False
         self.accelerations = []
         self.time_diffs = []
+        self.prev_time = t.time_ns()
 
         while not self.reset:
             self._distance_tracker()
             
-    def finish(self) -> None:
-        self._reset = True
+    def stop(self) -> None:
+        self.reset = True
 
     def get_displacement(self) -> np.ndarray:
         return self.displacement.copy()

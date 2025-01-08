@@ -13,8 +13,8 @@ from gyroscope import Gyro
     # WHILE PATH EXISTS
         # PREP SENSOR / MOVEMENT DATA FOR PARTICLE FILTER
         # CONTROLLER / PARTICLE FILTER
-        # OPTIONAL: UPDATE MAP (parallel with particle filter for foreign obstacles)
-        # GET BEST NEXT MOVEMENT
+        # OPTIONAL: UPDATE MAP (parallel with particle filter for foreign obstacles, needs to update path)
+        # GET BEST NEXT MOVEMENT VIA PARTICLE FILTER LOC AND UPDATED PATH
         # EXECUTE MOVEMENT
     # RESET TO NEW PATH
 
