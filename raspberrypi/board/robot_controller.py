@@ -9,6 +9,7 @@ from gyroscope import Gyro
     # INITIALIZE ROBOT
         # GET MAP
         # GET PATH
+        #OPTIONAL: OPTIMIZE PATH
 
     # WHILE PATH EXISTS
         # PREP SENSOR / MOVEMENT DATA FOR PARTICLE FILTER

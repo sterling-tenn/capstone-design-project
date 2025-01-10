@@ -38,6 +38,7 @@ class Movement:
         time = (rads * conf.INTERNAL_TURN_RADIUS) / (conf.WHEEL_RADIUS * conf.ANGULAR_VELOCITY)
         turn_logic()
         t.sleep(time)
+        self.stop()
 
     def _move_forward_logic(self) -> None:
         self.left_servo.max()
