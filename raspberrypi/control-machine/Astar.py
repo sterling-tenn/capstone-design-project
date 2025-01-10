@@ -30,9 +30,9 @@ class Astar:
         return abs(delta_x) + abs(delta_y)
     
     def set_heuristic_method(self, method) -> None:
-            self._integration_method = method
+            self._heuristic = method
 
-    def _is_obstacle(self, r, c):
+    def _is_obstacle(self, r, c) -> bool:
         return (r, c) in self._obstacles
 
     def _get_neighbors(self, curr):
