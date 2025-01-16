@@ -1,4 +1,4 @@
 from robot_controller import RobotController
 
 controller = RobotController()
-controller.run('auto', 'path.json')
+controller.run('auto', '/home/raspberrypi/capstone-design-project/raspberrypi/board/path.json')

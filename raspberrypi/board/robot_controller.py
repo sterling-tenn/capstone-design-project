@@ -34,9 +34,9 @@ class RobotController:
             directions = data["directions"]
 
         for direction in directions:
-            if (self._sensor_centre.collision_detected() or 
-                self._sensor_left.collision_detected() or 
-                self._sensor_right.collision_detected()):
+            if (self._sensor_centre.is_collision_detected() or 
+                self._sensor_left.is_collision_detected() or 
+                self._sensor_right.is_collision_detected()):
                 print("Collision detected! Stopping the robot.")
                 self.movement.stop()
                 break
@@ -58,54 +58,73 @@ class RobotController:
         import sys
         import termios
         import tty
-        
+        import select
+
         def getch():
+            """Get a single character from standard input."""
             fd = sys.stdin.fileno()
             old_settings = termios.tcgetattr(fd)
             try:
-                tty.setraw(sys.stdin.fileno())
-                ch = sys.stdin.read(1)
+                tty.setraw(fd)
+                if select.select([sys.stdin], [], [], 0.1)[0]:  # Non-blocking check for keypress
+                    return sys.stdin.read(1)
+                else:
+                    return None
             finally:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            return ch
 
-        print("Manual mode active. Use 'W' to move forward, 'S' to move backward, 'A' to turn left, 'D' to turn right, 'T' to stop, and 'Q' to exit.")
+        print(
+            "Manual mode active." 
+            "\nHold: "
+            "\n\t'W' to move forward," 
+            "\n\t'S' to move backward," 
+            "\n\t'A' to turn left," 
+            "\n\t'D' to turn right." 
+            "\nRelease to stop." 
+            "\nPress 'Q' to exit."
+        )
+
+        current_command = None
 
         while True:
-            char = getch().lower()
-            match char:
-                case 'w':
-                    print("Moving Forward")
-                    self.movement.move_forward(conf.BLOCK_SIZE)
-                case 's':
-                    print("Moving Backward")
-                    self.movement.move_backward(conf.BLOCK_SIZE)
-                case 'a':
-                    print("Turning Left")
-                    self.movement.turn_left(90)
-                case 'd':
-                    print("Turning Right")
-                    self.movement.turn_right(90)
-                case 't':
-                    print("Stopping")
-                    self.movement.stop()
-                case 'q':
-                    print("Exiting manual mode")
+            char = getch()
+
+            if char:
+                char = char.lower()
+                if char == 'w':
+                    current_command = 'w'
+                    self.movement._move_forward_logic()
+                elif char == 's':
+                    current_command = 's'
+                    self.movement._move_backward_logic()
+                elif char == 'a':
+                    current_command = 'a'
+                    self.movement._turn_left_logic()
+                elif char == 'd':
+                    current_command = 'd'
+                    self.movement._turn_right_logic()
+                elif char == 'q':
+                    print("\nExiting manual mode")
                     break
-                case _:
-                    raise ValueError("Unsupported input")
-    
+            else:
+                # If no key is pressed or released, stop movement
+                if current_command:
+                    print("Stopping", end="\r")
+                    self.movement.stop()
+                    current_command = None
+
     def run(self, mode, file_path=None):
         try:
-            input("Press Enter to start the automatic movement sequence")
-
             match mode:
                 case 'auto':
+                    input("Press Enter to start the automatic movement sequence")
                     if file_path is None:
                         raise ValueError("File path is required for auto mode")
                     self._move_robot_auto(file_path)
+
                 case 'manual':
                     self._move_robot_manual()
+
                 case _:
                     raise ValueError("Unsupported mode")
 
@@ -113,6 +132,3 @@ class RobotController:
             print("\nProgram interrupted by user. Exiting...")
         finally:
             self.movement.stop()
-            self._sensor_centre.close()
-            self._sensor_left.close()
-            self._sensor_right.close()

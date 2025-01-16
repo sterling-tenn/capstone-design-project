@@ -1,7 +1,6 @@
 from smbus2 import SMBus
 import math as m
 import numpy as np
-import time as t
 import conf as conf
 
 class Gyro:
@@ -60,13 +59,17 @@ class Gyro:
         radians = m.atan2(y, self.dist(x, z))
         return m.degrees(radians)
 
-    def get_accel_out(self) -> np.ndarray:
+    def get_z_rotation(self, x, y, z) -> float:
+        radians = m.atan2(z, self.dist(x, y))
+        return m.degrees(radians)
+
+    def get_accel(self) -> np.ndarray:
         xout = self.read_word_2c(self.accel_xout_addr)
         yout = self.read_word_2c(self.accel_yout_addr)
         zout = self.read_word_2c(self.accel_zout_addr)
         return np.array([xout, yout, zout])
     
-    def get_gyro_out(self) -> np.ndarray:
+    def get_gyro(self) -> np.ndarray:
         xout = self.read_word_2c(self.gyro_xout_addr)
         yout = self.read_word_2c(self.gyro_yout_addr)
         zout = self.read_word_2c(self.gyro_zout_addr)
@@ -74,11 +77,11 @@ class Gyro:
     
     def get_accel_scaled(self) -> np.ndarray:
         # Convert to m/s^2 assuming the scale factor is 16384 LSB/g
-        return self.get_accel_out() * 9.80665 / 16384.0
+        return self.get_accel() * 9.80665 / 16384.0
 
     def get_gyro_scaled(self) -> np.ndarray:
         # Convert to degrees per second assuming the scale factor is 131 LSB/(°/s)
-        return self.get_gyro_out() / 131.0
+        return self.get_gyro() / 131.0
     
     def get_temp(self) -> float:
         # Convert to degrees Celsius
@@ -87,49 +90,59 @@ class Gyro:
     def get_id(self) -> int:
         return self.id
 
-# Run the program to test
-gyro = Gyro()
-while True:
-    print("=================================================")
+
+if __name__ == "__main__":
+
+    import os
+    import time as t
+
+    # Run the program to test
+    gyro = Gyro(conf.GYRO_SENSOR_ID)
     
-    # Get scaled gyro data
-    gyro_scaled = gyro.get_gyro_scaled()
-    gyro_xout_scaled = gyro_scaled[0]
-    gyro_yout_scaled = gyro_scaled[1]
-    gyro_zout_scaled = gyro_scaled[2]
+    while True:
+        # Get scaled gyro data
+        gyro_scaled = gyro.get_gyro_scaled()
+        gyro_xout_scaled = gyro_scaled[0]
+        gyro_yout_scaled = gyro_scaled[1]
+        gyro_zout_scaled = gyro_scaled[2]
 
-    # Get scaled accelerometer data
-    accel_scaled = gyro.get_accel_scaled()
-    accel_xout_scaled = accel_scaled[0]
-    accel_yout_scaled = accel_scaled[1]
-    accel_zout_scaled = accel_scaled[2]
+        # Get scaled accelerometer data
+        accel_scaled = gyro.get_accel_scaled()
+        accel_xout_scaled = accel_scaled[0]
+        accel_yout_scaled = accel_scaled[1]
+        accel_zout_scaled = accel_scaled[2]
 
-    # Calculate rotations
-    x_rotation = gyro.get_x_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
-    y_rotation = gyro.get_y_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
+        # Calculate rotations
+        x_rotation = gyro.get_x_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
+        y_rotation = gyro.get_y_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
+        z_rotation = gyro.get_z_rotation(accel_scaled[0], accel_scaled[1], accel_scaled[2])
 
-    # Calculate temperature
-    temp = gyro.get_temp()
-    
-    # Print gyroscope data
-    print("Gyroscope data:")
-    print(f"  X: {gyro_xout_scaled:.2f} deg/s")
-    print(f"  Y: {gyro_yout_scaled:.2f} deg/s")
-    print(f"  Z: {gyro_zout_scaled:.2f} deg/s")
+        # Calculate temperature
+        temp = gyro.get_temp()
 
-    # Print accelerometer data
-    print("Accelerometer data:")
-    print(f"  X: {accel_xout_scaled:.4f} m/s^2")
-    print(f"  Y: {accel_yout_scaled:.4f} m/s^2")
-    print(f"  Z: {accel_zout_scaled:.4f} m/s^2")
-    
-    # Print rotation data
-    print("Rotation (in degrees):")
-    print(f"  X: {x_rotation:.2f}")
-    print(f"  Y: {y_rotation:.2f}")
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=================================================")
+        # Print gyroscope data
+        print("Gyroscope data:")
+        print(f"  X: {gyro_xout_scaled:.2f} deg/s")
+        print(f"  Y: {gyro_yout_scaled:.2f} deg/s")
+        print(f"  Z: {gyro_zout_scaled:.2f} deg/s")
 
-    # Print temperature data
-    print("Temperature (in Celsius):")
-    print(f"  T: {temp:.2f}")
-    
-    t.sleep(0.1)
+        # Print accelerometer data
+        print("Accelerometer data:")
+        print(f"  X: {accel_xout_scaled:.4f} m/s^2")
+        print(f"  Y: {accel_yout_scaled:.4f} m/s^2")
+        print(f"  Z: {accel_zout_scaled:.4f} m/s^2")
+        
+        # Print rotation data
+        print("Rotation (in degrees):")
+        print(f"  X: {x_rotation:.2f}")
+        print(f"  Y: {y_rotation:.2f}")
+        print(f"  Z: {z_rotation:.2f}")
+
+        # Print temperature data
+        print("Temperature (in Celsius):")
+        print(f"  T: {temp:.2f}")
+
+        print("=================================================")
+        t.sleep(0.1)

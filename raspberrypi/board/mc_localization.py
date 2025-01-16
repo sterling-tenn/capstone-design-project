@@ -32,28 +32,22 @@ class MCLocalization:
             sigma_squared = conf.SENSOR_SIGMA ** 2
             normalization_factor = 1.0 / (np.sqrt(2 * np.pi) * conf.SENSOR_SIGMA)
 
-            if sensor_id == conf.GYRO_SENSOR_ID:
-                ptheta_values  = self._particles[:, 2]
-                rotation = sensor.get_x_rotation(*sensor.get_accel_scaled())
-                weights = normalization_factor * np.exp(-((ptheta_values - rotation) ** 2) / (2 * sigma_squared))
+            for idx in range(self.num_particles):
+                particle = self._particles[idx]
 
-            else:
-                for idx in range(self.num_particles):
-                    particle = self._particles[idx]
+                closest_distance = float('inf')
+                for landmark in self._map:
+                    dist_to_landmark = self._distance(particle, landmark)
+                    if dist_to_landmark < closest_distance:
+                        closest_distance = dist_to_landmark
 
-                    closest_distance = float('inf')
-                    for landmark in self._map:
-                        dist_to_landmark = self._distance(particle, landmark)
-                        if dist_to_landmark < closest_distance:
-                            closest_distance = dist_to_landmark
+                # If the closest distance is still infinity, set weight to a very small value
+                if closest_distance == float('inf'):
+                    weights[idx] *= conf.NULL_WEIGHT
+                else:
+                    weight = normalization_factor * np.exp(-((closest_distance - sensor.get_distance()) ** 2) / (2 * sigma_squared))    
 
-                    # If the closest distance is still infinity, set weight to a very small value
-                    if closest_distance == float('inf'):
-                        weights[idx] *= conf.NULL_WEIGHT
-                    else:
-                        weight = normalization_factor * np.exp(-((closest_distance - sensor.get_distance()) ** 2) / (2 * sigma_squared))    
-
-                    weights[idx] *= weight
+                weights[idx] *= weight
 
         # Avoid NaN issues: If the sum of weights is zero, reset weights to a small uniform distribution
         weights_sum = np.sum(weights)

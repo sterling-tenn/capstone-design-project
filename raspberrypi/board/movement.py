@@ -1,15 +1,14 @@
 import time as t
 import numpy as np
-from gpiozero.pins.pigpio import PiGPIOFactory
 from gpiozero import Servo
 import conf as conf
 
 class Movement:
 
     def __init__(self) -> None:
-        self.myfactory = PiGPIOFactory()
-        self.left_servo = Servo(conf.LEFT_SERVO_PIN, pin_factory=self.myfactory)
-        self.right_servo = Servo(conf.RIGHT_SERVO_PIN, pin_factory=self.myfactory)
+        self.left_servo = Servo(conf.LEFT_SERVO_PIN)
+        self.right_servo = Servo(conf.RIGHT_SERVO_PIN)
+        self.stop()
 
     def move_forward(self, distance: float) -> None:
         self._execute_movement(distance, self._move_forward_logic)
@@ -55,3 +54,20 @@ class Movement:
     def _turn_right_logic(self) -> None:
         self.left_servo.max()
         self.right_servo.max()
+
+
+if __name__ == "__main__":
+    pass
+    move = Movement()
+
+    move.move_forward(0.5)
+    move.move_backward(0.5)
+    move.move_forward(1)
+    move.move_backward(1)
+
+    move.turn_right(90)
+    move.turn_left(90)
+    move.turn_right(180)
+    move.turn_left(180)
+    move.turn_right(360)
+    move.turn_left(360)
