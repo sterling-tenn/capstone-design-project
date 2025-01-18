@@ -35,11 +35,14 @@ export default function FloorplanForm() {
     const x = e.clientX - boundingRect.left; // Calculate x-coordinate relative to the image
     const y = e.clientY - boundingRect.top;  // Calculate y-coordinate relative to the image
 
-    if (markers.length == 2) {
-      // Only allow two markers (for start and end only) to be shown
-      setMarkers([{ x, y }])
-    } else {
-      setMarkers((prev) => [...prev, { x, y }]); // Add the new marker
+    // Ensure the marker is within the image boundaries
+    if (x >= 0 && x <= boundingRect.width && y >= 0 && y <= boundingRect.height) {
+      if (markers.length === 2) {
+        // Only allow two markers (start and end)
+        setMarkers([{ x, y }]);
+      } else {
+        setMarkers((prev) => [...prev, { x, y }]);
+      }
     }
   };
 
@@ -65,13 +68,7 @@ export default function FloorplanForm() {
       />
 
       {/* Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 w-full">
-        <button
-          type="submit"
-          className="w-full sm:w-auto rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-12 px-6"
-        >
-          Upload
-        </button>
+      {file && <div className="flex flex-col sm:flex-row gap-4 w-full">
         <button
           type="button"
           onClick={handleRemove}
@@ -79,7 +76,7 @@ export default function FloorplanForm() {
         >
           Remove
         </button>
-      </div>
+      </div>}
 
       {/* Display Message */}
       {msg && <div className="text-sm text-gray-700 mt-2">{msg}</div>}
@@ -96,35 +93,37 @@ export default function FloorplanForm() {
             className="w-full rounded-lg shadow-lg"
           />
           {/* Render Markers */}
-          {markers.map((marker, index) => (
-            <div
-              key={index}
-              className="absolute w-4 h-4 rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: `${marker.x}px`, top: `${marker.y}px`,
-                backgroundColor: index === 0 ? 'green' : 'red'
-              }}
-            />
-          ))}
-
-          <div className="flex flex-col gap-4 w-full" style={{ marginTop: 20 }}>
-            <div className="flex gap-4 justify-center">
-              {markers.map((marker, index) => (
-                <div
-                  key={index}
-                >
-                  {index == 0 ? `Start` : `End`} Coords: {marker.x}, {marker.y}
-                </div>
-              ))}
-            </div>
-            <button
-              className="w-full sm:w-auto rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-green-500 text-white gap-2 hover:bg-green-600 dark:hover:bg-green-400 text-sm sm:text-base h-12 px-6"
-            >
-              Send it!
-            </button>
+          <div>
+            {markers.map((marker, index) => (
+              <div
+                key={index}
+                className="absolute w-4 h-4 rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${marker.x}px`,
+                  top: `${marker.y}px`,
+                  backgroundColor: index === 0 ? "green" : "red",
+                }}
+              />
+            ))}
           </div>
         </div>
       )}
+
+      {imageSrc && <div className="flex flex-col gap-4 w-full" style={{ marginTop: 20 }}>
+        <div className="flex gap-4 justify-center">
+          {markers.map((marker, index) => (
+            <div key={index}>
+              {index === 0 ? `Start` : `End`} Coords: {marker.x.toFixed(2)}, {marker.y.toFixed(2)}
+            </div>
+          ))}
+        </div>
+        <button
+          type="submit"
+          className="w-full sm:w-auto rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-green-500 text-white gap-2 hover:bg-green-600 dark:hover:bg-green-400 text-sm sm:text-base h-12 px-6"
+        >
+          Send it!
+        </button>
+      </div>}
     </form>
   );
 }

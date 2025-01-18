@@ -7,13 +7,9 @@ export default function Home() {
         <h2 className="text-6xl font-bold">CargoBuddy</h2>
         <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
+            Upload the floorplan image
           </li>
-          <li>Save and see your changes instantly.</li>
+          <li>Set where the robot is right now and where you want it to go.</li>
         </ol>
         <FloorplanForm />
       </main>
