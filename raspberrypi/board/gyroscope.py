@@ -62,6 +62,11 @@ class Gyro:
     def get_z_rotation(self, x, y, z) -> float:
         radians = m.atan2(z, self.dist(x, y))
         return m.degrees(radians)
+    
+    def get_next_heading(self, delta_x, delta_y, curr_heading) -> float:
+        radians = m.atan2(delta_y, delta_x)
+        desired_heading = m.degrees(radians)
+        return desired_heading-curr_heading
 
     def get_accel(self) -> np.ndarray:
         xout = self.read_word_2c(self.accel_xout_addr)

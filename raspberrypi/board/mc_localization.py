@@ -5,8 +5,8 @@ class MCLocalization:
     def __init__(self, map, num_particles=1024):
         self.reset = False
         self.num_particles = num_particles
-        self._map = map
-        self._world_size = map.size
+        self._map = map["obstacles"]
+        self._world_size = map["dimensions"]
         self._particles = self._init_particles(self.num_particles)
 
     def _init_particles(self, num_particles) -> np.ndarray:
