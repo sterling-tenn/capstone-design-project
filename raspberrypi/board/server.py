@@ -8,14 +8,14 @@ import json
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
 
-# # Set GPIO for ultrasonic sensor
-# sensor_centre = DistanceSensor(trigger=TRIGGER_PIN_CENTRE, echo=ECHO_PIN_CENTRE)
-# sensor_left = DistanceSensor(trigger=TRIGGER_PIN_LEFT, echo=ECHO_PIN_LEFT)
-# sensor_right = DistanceSensor(trigger=TRIGGER_PIN_RIGHT, echo=ECHO_PIN_RIGHT)
+# Set GPIO for ultrasonic sensor
+sensor_centre = DistanceSensor(trigger=TRIGGER_PIN_CENTRE, echo=ECHO_PIN_CENTRE)
+sensor_left = DistanceSensor(trigger=TRIGGER_PIN_LEFT, echo=ECHO_PIN_LEFT)
+sensor_right = DistanceSensor(trigger=TRIGGER_PIN_RIGHT, echo=ECHO_PIN_RIGHT)
 
-# # Set GPIO for servos
-# left_servo = Servo(LEFT_SERVO_PIN)
-# right_servo = Servo(RIGHT_SERVO_PIN)
+# Set GPIO for servos
+left_servo = Servo(LEFT_SERVO_PIN)
+right_servo = Servo(RIGHT_SERVO_PIN)
 
 def read_sensors():
     centre, left, right = sensor_centre, sensor_left, sensor_right
@@ -31,31 +31,31 @@ FORWARD = 1
 BACKWARD = -1
 
 def move_forward():
-    # left_servo.value = FORWARD
-    # right_servo.value = BACKWARD
-    print("Moving forward")
+    left_servo.value = FORWARD
+    right_servo.value = BACKWARD
+    # print("Moving forward")
 
 def move_backward():
-    # left_servo.value = BACKWARD
-    # right_servo.value = FORWARD
-    print("Moving backward")
+    left_servo.value = BACKWARD
+    right_servo.value = FORWARD
+    # print("Moving backward")
 
 # counter clockwise
 def turn_left():
-    # left_servo.value = BACKWARD
-    # right_servo.value = BACKWARD
-    print("Turning left")
+    left_servo.value = BACKWARD
+    right_servo.value = BACKWARD
+    # print("Turning left")
 
 # clockwise
 def turn_right():
-    # left_servo.value = FORWARD
-    # right_servo.value = FORWARD
-    print("Turning right")
+    left_servo.value = FORWARD
+    right_servo.value = FORWARD
+    # print("Turning right")
 
 def stop():
-    # left_servo.detach()
-    # right_servo.detach()
-    print("Stopping")
+    left_servo.detach()
+    right_servo.detach()
+    # print("Stopping")
 
 def handle_client(client_socket):
     """Handles communication with a single client."""
@@ -83,8 +83,9 @@ def handle_client(client_socket):
 def start_server():
     """Starts the TCP server."""
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # reuse if address is in use
     server_socket.bind((HOST, PORT))
-    server_socket.listen(5)  # Allow up to 5 connections
+    server_socket.listen()
     print(f"Server listening on {HOST}:{PORT}")
 
     while True:
