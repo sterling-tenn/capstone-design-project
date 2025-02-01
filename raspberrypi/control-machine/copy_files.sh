@@ -2,14 +2,15 @@
 # This script copies files to a remote host
 
 # List of files to send
-# servo.py, ultrasonic.py, gyroscope.py are temp for testing
 LOCAL_FILES=(
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/conf.py"
+            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/conf.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/auto.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/path.json"
             "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/server.py"
 
+            # temp for testing
+            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ir.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/gyroscope.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/servo.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"

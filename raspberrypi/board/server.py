@@ -1,6 +1,7 @@
 import socket
 from gpiozero import Servo
 from gpiozero import DistanceSensor
+from gpiozero import LineSensor
 from conf import *
 import atexit
 import json
@@ -17,6 +18,26 @@ sensor_right = DistanceSensor(trigger=TRIGGER_PIN_RIGHT, echo=ECHO_PIN_RIGHT)
 left_servo = Servo(LEFT_SERVO_PIN)
 right_servo = Servo(RIGHT_SERVO_PIN)
 
+# Set GPIO for IR sensor
+ir_sensor = LineSensor(IR_SENSOR_PIN)
+
+# Set flag to indicate if ground is detected
+GROUND_DETECTED = True
+
+def ground_detected():
+    global GROUND_DETECTED
+    GROUND_DETECTED = True
+
+def no_ground_detected():
+    global GROUND_DETECTED
+    GROUND_DETECTED = False
+    stop()
+
+# Set callbacks for IR sensor
+ir_sensor.when_line = ground_detected
+ir_sensor.when_no_line = no_ground_detected
+
+
 def read_sensors():
     centre, left, right = sensor_centre, sensor_left, sensor_right
     
@@ -31,23 +52,35 @@ FORWARD = 1
 BACKWARD = -1
 
 def move_forward():
+    if not GROUND_DETECTED:
+        return
+        
     left_servo.value = FORWARD
     right_servo.value = BACKWARD
     # print("Moving forward")
 
 def move_backward():
+    if not GROUND_DETECTED:
+        return
+        
     left_servo.value = BACKWARD
     right_servo.value = FORWARD
     # print("Moving backward")
 
 # counter clockwise
 def turn_left():
+    if not GROUND_DETECTED:
+        return
+        
     left_servo.value = BACKWARD
     right_servo.value = BACKWARD
     # print("Turning left")
 
 # clockwise
 def turn_right():
+    if not GROUND_DETECTED:
+        return
+        
     left_servo.value = FORWARD
     right_servo.value = FORWARD
     # print("Turning right")
