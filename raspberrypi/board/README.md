@@ -1,7 +1,6 @@
 this files in this folder are the ones relevant to being stored on the raspberry pi
 
-## Setup (example) startup service (for `startup.sh`):
-
+## Setup startup service (for `server.py`):
 `sudo nano /etc/systemd/system/cargobuddy-startup.service`
 ```
 [Unit]
@@ -9,7 +8,7 @@ Description=CargoBuddy Startup
 After=network.target
 
 [Service]
-ExecStart=/home/raspberrypi/CargoBuddy/startup.sh
+ExecStart=/usr/bin/python3 /home/raspberrypi/CargoBuddy/server.py
 WorkingDirectory=/home/raspberrypi/CargoBuddy
 User=raspberrypi
 Group=raspberrypi
