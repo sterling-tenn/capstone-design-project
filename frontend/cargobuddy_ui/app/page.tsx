@@ -1,14 +1,15 @@
 "use client"
-import { useState } from "react";
+
 import { motion } from "framer-motion";
-import { MenuOutlined, PlusOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Layout, Typography } from "antd";
 import { Col, Row } from 'antd';
 import FavoriteActions from "./components/FavoriteActions";
 import MapActions from "./components/MapActions";
+import RemoteControl from "./components/RemoteControl";
 
 const { Header, Content } = Layout;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function Home() {
   return (
@@ -33,6 +34,7 @@ export default function Home() {
               <Title level={2}>Welcome home.</Title>
             </Card>
           </Col>
+          <RemoteControl/>
           <MapActions />
           <FavoriteActions />
         </Row>
