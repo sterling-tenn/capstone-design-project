@@ -33,7 +33,7 @@ export default function Home() {
               <Title level={2}>Welcome home.</Title>
             </Card>
           </Col>
-          <MapActions data={[]} />
+          <MapActions />
           <FavoriteActions />
         </Row>
       </Content>
