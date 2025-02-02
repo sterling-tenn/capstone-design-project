@@ -1,28 +1,39 @@
 "use client"
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Layout, Typography } from "antd";
+import { Card, Layout, Typography } from "antd";
 import { Col, Row } from 'antd';
 import FavoriteActions from "./components/FavoriteActions";
 import MapActions from "./components/MapActions";
 import RemoteControl from "./components/RemoteControl";
+import NewJobAction from "./components/NewJobAction";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
 export default function Home() {
+  // TODO: make parent cards 100% width of the col they're part of
+  const [actions, setActions] = useState<any[]>([])
+
+  const handleSetAction = (actionName: string, info: any) => {
+    // figure out why params aint right
+    console.log("action name", actionName);
+    setActions(prev => [...prev, { actionName: "Kitchen", info: {} }]);
+  };
+
+
   return (
     <Layout style={{ minHeight: "100vh", background: "#f0f2f5", padding: "16px" }}>
       {/* Header */}
       <Header style={{ display: "flex", justifyContent: "right", alignItems: "center", background: "white", borderRadius: "8px", padding: "16px" }}>
-        <Button type="primary" size="large" shape="round" icon={<PlusOutlined />}>New job</Button>
+        <NewJobAction handleSetAction={handleSetAction} />
       </Header>
 
       <Content style={{ marginTop: "24px" }}>
-        <Row style={{ flexDirection: "column"}} gutter={[12, 12]} wrap={true}>
+        <Row style={{ flexDirection: "column" }} align="middle" gutter={[12, 12]} wrap={true}>
           <Col xs={24} md={18} lg={12}>
-            <Card style={{ textAlign: "center", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+            <Card style={{ textAlign: "center", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", minWidth: "100%" }}>
               <motion.img
                 src="/robot.jpg"
                 alt="Robot Vacuum"
@@ -34,9 +45,9 @@ export default function Home() {
               <Title level={2}>Welcome home.</Title>
             </Card>
           </Col>
-          <RemoteControl/>
           <MapActions />
-          <FavoriteActions />
+          <FavoriteActions favoriteActions={actions} />
+          <RemoteControl />
         </Row>
       </Content>
 
