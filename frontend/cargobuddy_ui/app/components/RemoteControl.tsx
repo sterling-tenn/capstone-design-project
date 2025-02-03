@@ -1,11 +1,13 @@
 "use client"
-import { Col, Divider, Card, Typography, Flex, FloatButton } from 'antd';
+import { useState, useEffect } from "react";
+import { Col, Divider, Card, Typography, Flex, FloatButton, message } from 'antd';
 import {
     UpOutlined,
     RightOutlined,
     DownOutlined,
     LeftOutlined,
 } from '@ant-design/icons';
+import { moveBackwards, moveForward, turnLeft, turnRight } from '../lib/RaspberryPiCalls';
 
 const { Title, Text } = Typography;
 
@@ -47,9 +49,37 @@ const icons = [
 ];
 
 const RemoteControl: React.FC = () => {
-    const handleClick = (direction: string) => {
+    const [messageApi, contextHolder] = message.useMessage();
+    const [piRes, setPiRes] = useState<any>({})
+
+    useEffect(() => {
+        if (piRes === null) return;
+
+        if (piRes?.error) {
+            messageApi.error("Error while moving the robot, please try again later.");
+        } else {
+            messageApi.success("Moved the robot successfully!");
+        }
+    }, [piRes]);
+
+    const handleClick = async (direction: string) => {
         // Make call to robot to move
-        console.log(`Button clicked: ${direction}`);
+        let res = null;
+
+        if (direction === "top") {
+            res = await moveForward();
+        } else if (direction === "right") {
+            res = await turnRight();
+        } else if (direction === "left") {
+            res = await turnLeft();
+        } else if (direction == "bottom") {
+            res = await moveBackwards();
+        } else {
+            console.error("Invalid direction:", direction);
+            return
+        }
+
+        setPiRes(res)
     };
 
     return (
