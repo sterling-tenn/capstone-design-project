@@ -8,6 +8,7 @@ import json
 import threading
 import time
 import struct
+import generate_floorplans_map
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
@@ -152,6 +153,9 @@ def handle_client(client_socket):
                     f.write(image_data)
                 print("Image received and saved as floorplans.jpg")
                 client_socket.send(b"Image received successfully")
+
+                # Generate Floorplans Map
+                generate_floorplans_map.generate("floorplans.jpg")
             else:
                 print("Failed to receive image data.")
 

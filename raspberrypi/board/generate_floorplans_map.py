@@ -1,3 +1,6 @@
+# TO INSTALL OpenCV ON RASPBERRY PI. PIP CAUSES error: externally-managed-environment
+# sudo apt install python3-venv
+
 import cv2
 import numpy as np
 # import matplotlib.pyplot as plt
@@ -88,7 +91,7 @@ def save_binary_map_txt(binary_array, output_path):
     """
     np.savetxt(output_path, binary_array, fmt='%d', delimiter='')
 
-def main(image_path):
+def generate(image_path):
     edges = detect_generalized_edges(image_path)
     pooled_edges = average_pooling_binary(edges, pool_size=(6, 6))
     # print(len(pooled_edges),len(pooled_edges[0]))
@@ -96,8 +99,4 @@ def main(image_path):
 
     # Walls are represented by 1s and open areas by 0s
     save_binary_map_txt(pooled_edges, "binary_map.txt")
-
-if __name__ == '__main__':
-    import sys
-    main(sys.argv[1])
 
