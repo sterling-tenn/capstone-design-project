@@ -1,13 +1,14 @@
-"use client"
-import { useState, useEffect } from "react";
-import { Col, Divider, Card, Typography, Flex, FloatButton, message } from 'antd';
+"use client";
+
+import { Col, Divider, Card, Typography, Flex, FloatButton } from 'antd';
 import {
     UpOutlined,
     RightOutlined,
     DownOutlined,
+    CloseOutlined,
     LeftOutlined,
 } from '@ant-design/icons';
-import { moveBackwards, moveForward, turnLeft, turnRight } from '../lib/RaspberryPiCalls';
+import { moveBackwards, moveForward, turnLeft, turnRight, stop } from '../lib/RaspberryPiCalls';
 
 const { Title, Text } = Typography;
 
@@ -16,7 +17,7 @@ const BUTTON_SIZE = 40;
 
 const wrapperStyle: React.CSSProperties = {
     width: '100%',
-    height: '200px',
+    height: '250px',
     overflow: 'hidden',
     position: 'relative',
 };
@@ -25,6 +26,7 @@ const boxStyle: React.CSSProperties = {
     width: BOX_SIZE,
     height: BOX_SIZE,
     position: 'relative',
+    margin: "auto",
 };
 
 const insetInlineEnd = [
@@ -49,50 +51,44 @@ const icons = [
 ];
 
 const RemoteControl: React.FC = () => {
-    const [messageApi, contextHolder] = message.useMessage();
-    const [piRes, setPiRes] = useState<any>({})
-
-    useEffect(() => {
-        if (piRes === null) return;
-
-        if (piRes?.error) {
-            messageApi.error("Error while moving the robot, please try again later.");
-        } else {
-            messageApi.success("Moved the robot successfully!");
-        }
-    }, [piRes]);
+    const handleStop = async () => {
+        await stop();
+    };
 
     const handleClick = async (direction: string) => {
-        // Make call to robot to move
         let res = null;
 
-        if (direction === "top") {
-            res = await moveForward();
-        } else if (direction === "right") {
-            res = await turnRight();
-        } else if (direction === "left") {
-            res = await turnLeft();
-        } else if (direction == "bottom") {
-            res = await moveBackwards();
-        } else {
-            console.error("Invalid direction:", direction);
-            return
+        switch (direction) {
+            case "top":
+                res = await moveForward();
+                break;
+            case "right":
+                res = await turnRight();
+                break;
+            case "left":
+                res = await turnLeft();
+                break;
+            case "bottom":
+                res = await moveBackwards();
+                break;
+            default:
+                console.error("Invalid direction:", direction);
+                return;
         }
-
-        setPiRes(res)
     };
 
     return (
-        <Col xs={24} md={18} lg={12} style={{ height: 300 }}>
+        <Col xs={24} md={18} lg={12} style={{ height: 320 }}>
             <Card style={{ borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "100%" }}>
-                <Title level={3}> Remote Control</Title>
+                <Title level={3}>Remote Control</Title>
                 <Divider />
                 <Text>Click on the D-pad below to move the robot manually.</Text>
                 <Flex justify="center" align="center" style={wrapperStyle}>
                     <div style={boxStyle}>
-                        {(['top', 'right', 'bottom', 'left'] as const).map((placement, i) => {
+                        {/* Directional Buttons */}
+                        {(["top", "right", "bottom", "left"] as const).map((placement, i) => {
                             const style: React.CSSProperties = {
-                                position: 'absolute',
+                                position: "absolute",
                                 insetInlineEnd: insetInlineEnd[i],
                                 bottom: bottom[i],
                                 backgroundColor: "#1890ff",
@@ -106,6 +102,24 @@ const RemoteControl: React.FC = () => {
                                 />
                             );
                         })}
+                        {/* STOP Button in the Center */}
+                        <FloatButton
+                            style={{
+                                position: "absolute",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                width: 50,
+                                height: 50,
+                                borderRadius: "50%",
+                                backgroundColor: "#ff4d4f",
+                                color: "white",
+                                fontSize: 24,
+                                boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
+                            }}
+                            icon={<CloseOutlined />} // STOP icon
+                            onClick={handleStop}
+                        />
                     </div>
                 </Flex>
             </Card>
