@@ -8,6 +8,7 @@ LOCAL_FILES=(
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/path.json"
             "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/server.py"
+            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/generate_floorplans_map.py"
 
             # temp for testing
             # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ir.py"
