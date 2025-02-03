@@ -7,6 +7,7 @@ import atexit
 import json
 import threading
 import time
+import struct
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
@@ -109,23 +110,51 @@ def stop():
     # print("Stopping")
 
 def handle_client(client_socket):
-    """Handles communication with a single client."""
+    """Handles communication with a single client, processing text commands and image uploads."""
     try:
-        while True:
-            data = client_socket.recv(1024) # Receive data (up to 1024 bytes)
-            if not data:
-                break
-            print(f"Received: {data.decode()}")
-            result, msg = process_data(data.decode())
+        # Receive the 4-byte header that determines the type (1 = text, 2 = image)
+        header = client_socket.recv(4)
+        if not header:
+            print("Client disconnected.")
+            return
+        
+        msg_type = struct.unpack("!I", header)[0]  # Read as an integer
+
+        if msg_type == 1:  # Text Command
+            data = client_socket.recv(1024).decode()
+            print(f"Received command: {data}")
+            result, msg = process_text_command(data)
 
             response = json.dumps({
-                "received": data.decode(),
+                "received": data,
                 "msg": msg,
                 "result": result
             })
-
-            # Send a response back
             client_socket.send(response.encode())
+
+        elif msg_type == 2:  # Save the image uploaded as floorplans
+            # Receive the image size (4 bytes)
+            img_size_bytes = client_socket.recv(4)
+            img_size = struct.unpack("!I", img_size_bytes)[0]
+            print(f"Receiving image of size {img_size} bytes...")
+
+            # Receive the image data
+            image_data = b""
+            while len(image_data) < img_size:
+                chunk = client_socket.recv(min(4096, img_size - len(image_data)))
+                if not chunk:
+                    break
+                image_data += chunk
+
+            # Save the image
+            if image_data:
+                with open("floorplans.jpg", "wb") as f:
+                    f.write(image_data)
+                print("Image received and saved as floorplans.jpg")
+                client_socket.send(b"Image received successfully")
+            else:
+                print("Failed to receive image data.")
+
     except Exception as e:
         print(f"Error: {e}")
     finally:
@@ -144,26 +173,26 @@ def start_server():
         print(f"Connection from {addr}")
         handle_client(client_socket)
 
-def process_data(data):
-    """Processes data received from the client."""
+def process_text_command(cmd):
+    """Processes text command received from the client."""
     result = None
     msg = "OK"
 
-    if data.lower() == "move-forward":
+    if cmd.lower() == "move-forward":
         move_forward()
-    elif data.lower() == "move-backward":
+    elif cmd.lower() == "move-backward":
         move_backward()
-    elif data.lower() == "turn-left":
+    elif cmd.lower() == "turn-left":
         turn_left()
-    elif data.lower() == "turn-right":
+    elif cmd.lower() == "turn-right":
         turn_right()
-    elif data.lower() == "stop":
+    elif cmd.lower() == "stop":
         stop()
-    elif data.lower() == "get-sensor-data":
+    elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
     else:
-        msg = f"Unknown command: {data}"
-        print(f"Unknown command: {data}")
+        msg = f"Unknown command: {cmd}"
+        print(f"Unknown command: {cmd}")
 
     return result, msg
 
