@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, Layout, Typography } from "antd";
 import { Col, Row } from 'antd';
@@ -16,10 +16,17 @@ export default function Home() {
   // TODO: make parent cards 100% width of the col they're part of
   const [actions, setActions] = useState<any[]>([])
 
+  useEffect(() => {
+    const existingActions = JSON.parse(localStorage.getItem("actions") || "[]");
+    setActions(existingActions)
+  }, []);
+
   const handleSetAction = (actionName: string, info: any) => {
-    // figure out why params aint right
     console.log("action name", actionName);
-    setActions(prev => [...prev, { actionName: "Kitchen", info: {} }]);
+    const existingActions = JSON.parse(localStorage.getItem("actions") || "[]");
+    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, info }] : [{ actionName, info }];
+    localStorage.setItem("actions", JSON.stringify(updatedActions));
+    setActions(updatedActions);
   };
 
 
@@ -50,7 +57,6 @@ export default function Home() {
           <RemoteControl />
         </Row>
       </Content>
-
     </Layout>
   );
 }

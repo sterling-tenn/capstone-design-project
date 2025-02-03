@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Button, Modal, Form, Image, Typography, Input } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
-
 const { Title } = Typography;
 
 interface NewJobActionProps {
@@ -29,6 +28,8 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     const openModal = () => {
         setMarker(null); // Reset marker
         setModalOpen(true);
+        form.resetFields(); // Reset form fields when modal opens
+
         const storedImage = localStorage.getItem("savedImage");
         if (storedImage) {
             setFloorplan(storedImage);
@@ -53,14 +54,19 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
         setMarker({ x, y });
     };
 
-    // Handle form submission
-    const handleSubmit = () => {
-        console.log("Marker position:", marker);
-        // TODO: figure out how to actually send the end marker position lol
-        closeModal();
-        // idk what to put for info yet
-        let job = form.getFieldValue("jobName");
-        handleSetAction(job, {}); // Ensure `handleSetAction` is called with correct params
+    const handleSubmit = async () => {
+        try {
+            const values = await form.validateFields();
+
+            console.log("Form values:", values);
+            console.log("Marker position:", marker);
+
+            handleSetAction(values.jobName, { marker });
+
+            closeModal();
+        } catch (errorInfo) {
+            console.error("Validation failed:", errorInfo);
+        }
     };
 
     return (
@@ -79,8 +85,8 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
                 <Form form={form} layout="vertical">
                     <Form.Item
                         label="Job Name"
-                        name="jobName" // Correctly associate form state
-                        rules={[{ required: true, message: "Please enter a job name!" }]} // Optional validation
+                        name="jobName"
+                        rules={[{ required: true, message: "Please enter a job name!" }]}
                     >
                         <Input placeholder="Enter job name" />
                     </Form.Item>
