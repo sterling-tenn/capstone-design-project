@@ -5,6 +5,8 @@ from gpiozero import LineSensor
 from conf import *
 import atexit
 import json
+import threading
+import time
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
@@ -37,6 +39,22 @@ def no_ground_detected():
 ir_sensor.when_line = ground_detected
 ir_sensor.when_no_line = no_ground_detected
 
+# Set flag to indicate if front obstacle is detected
+FRONT_OBSTACLE_DETECTED = False
+
+def front_obstacle_detected():
+    global FRONT_OBSTACLE_DETECTED
+    while True:
+        l, c, r = read_sensors()
+
+        if c < STOP_DISTANCE or l < STOP_DISTANCE or r < STOP_DISTANCE:
+            print("Obstacle detected! Stopping the robot.")
+            FRONT_OBSTACLE_DETECTED = True
+            stop()
+        else:
+            FRONT_OBSTACLE_DETECTED = False
+
+        time.sleep(0.1)
 
 def read_sensors():
     centre, left, right = sensor_centre, sensor_left, sensor_right
@@ -52,7 +70,7 @@ FORWARD = 1
 BACKWARD = -1
 
 def move_forward():
-    if not GROUND_DETECTED:
+    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
         
     left_servo.value = FORWARD
@@ -60,7 +78,7 @@ def move_forward():
     # print("Moving forward")
 
 def move_backward():
-    if not GROUND_DETECTED:
+    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
         
     left_servo.value = BACKWARD
@@ -69,7 +87,7 @@ def move_backward():
 
 # counter clockwise
 def turn_left():
-    if not GROUND_DETECTED:
+    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
         
     left_servo.value = BACKWARD
@@ -78,7 +96,7 @@ def turn_left():
 
 # clockwise
 def turn_right():
-    if not GROUND_DETECTED:
+    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
         
     left_servo.value = FORWARD
@@ -153,5 +171,10 @@ def process_data(data):
 atexit.register(stop)
 
 if __name__ == "__main__":
-    stop() # stop servos on program completion
+    stop()
+
+    # to constantly read sensors in a separate thread to detect if an obstacle is in front
+    sensor_thread = threading.Thread(target=front_obstacle_detected)
+    sensor_thread.start()
+
     start_server()
