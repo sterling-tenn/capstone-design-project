@@ -1,6 +1,9 @@
+# TO INSTALL OpenCV ON RASPBERRY PI. PIP CAUSES error: externally-managed-environment
+# sudo apt install python3-venv
+
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15, 15), canny_threshold1=50, canny_threshold2=150, dilation_iterations=2, closing_kernel_size=(10, 10)):
     """
@@ -37,56 +40,63 @@ def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15,
     dilated_edges = cv2.dilate(closed_edges, dilation_kernel, iterations=dilation_iterations)
 
     return dilated_edges
-def average_pooling(array, pool_size):
+
+def average_pooling_binary(array, pool_size, threshold=127):
     """
-    Reduces the size of an array by averaging over non-overlapping square blocks.
+    Reduces the size of an array by averaging over non-overlapping square blocks 
+    and converts it into a binary map of 0s and 1s.
 
     :param array: The original 2D array (e.g., an image).
-    :param pool_size: The size of the square block to average over (e.g., (2, 2) for 2x2 blocks).
-    :return: A smaller 2D array with each value being the average of a block.
+    :param pool_size: The size of the square block to average over (e.g., (2,2) for 2x2 blocks).
+    :param threshold: The threshold to determine filled (1) or not filled (0).
+    :return: A smaller 2D binary array.
     """
-    # Calculate the shape of the output array
     output_shape = (
         array.shape[0] // pool_size[0],
         array.shape[1] // pool_size[1]
     )
 
-    # Initialize the output array
-    pooled_array = np.zeros(output_shape, dtype=array.dtype)
+    binary_array = np.zeros(output_shape, dtype=np.uint8)
 
-    # Iterate over each block in the array
     for i in range(output_shape[0]):
         for j in range(output_shape[1]):
-            # Extract the block from the original array
             block = array[
                 i * pool_size[0]:(i + 1) * pool_size[0],
                 j * pool_size[1]:(j + 1) * pool_size[1]
             ]
+            # If the average intensity is above the threshold, mark as 1 (filled), else 0
+            binary_array[i, j] = 1 if np.mean(block) > threshold else 0
 
-            # Calculate the average of the block, and round to the nearest integer
-            pooled_array[i, j] = round(np.mean(block) / 255) * 255
+    return binary_array
 
-    return pooled_array
-def display_edges(edges_array):
+# def display_edges(edges_array):
+#     """
+#     Displays a 2D NumPy array of edges as a grayscale image.
+
+#     :param edges_array: A 2D NumPy array representing the edges in the image.
+#     """
+#     # Display the image in grayscale
+#     plt.imshow(edges_array, cmap='gray')
+#     # Hide axis labels
+#     plt.axis('off')
+#     # Display the image
+#     plt.show()
+
+def save_binary_map_txt(binary_array, output_path):
     """
-    Displays a 2D NumPy array of edges as a grayscale image.
+    Saves the binary map as a text file with 0s and 1s.
 
-    :param edges_array: A 2D NumPy array representing the edges in the image.
+    :param binary_array: 2D NumPy array of 0s and 1s.
+    :param output_path: Path to save the text file.
     """
-    # Display the image in grayscale
-    plt.imshow(edges_array, cmap='gray')
-    # Hide axis labels
-    plt.axis('off')
-    # Display the image
-    plt.show()
+    np.savetxt(output_path, binary_array, fmt='%d', delimiter='')
 
-def main(image_path):
+def generate(image_path):
     edges = detect_generalized_edges(image_path)
-    pooled_edges = average_pooling(edges, pool_size=(6, 6))
-    print(len(pooled_edges),len(pooled_edges[0]))
-    display_edges(pooled_edges)
+    pooled_edges = average_pooling_binary(edges, pool_size=(6, 6))
+    # print(len(pooled_edges),len(pooled_edges[0]))
+    # display_edges(pooled_edges)
 
-if __name__ == '__main__':
-    import sys
-    main(sys.argv[1])
+    # Walls are represented by 1s and open areas by 0s
+    save_binary_map_txt(pooled_edges, "binary_map.txt")
 
