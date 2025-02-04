@@ -1,6 +1,6 @@
 "use client";
 
-import { Col, Divider, Card, Typography, Flex, FloatButton } from 'antd';
+import { Col, Divider, Card, Typography, Flex, FloatButton, notification } from 'antd';
 import {
     UpOutlined,
     RightOutlined,
@@ -51,9 +51,29 @@ const icons = [
 ];
 
 const RemoteControl: React.FC = () => {
+
+    const [api, contextHolder] = notification.useNotification();
+
     const handleStop = async () => {
         await stop();
     };
+
+    const success = (msg: string) => {
+        api.success({
+            message: "Success",
+            description: msg,
+            placement: "topRight",
+        });
+    };
+
+    const error = (msg: string) => {
+        api.error({
+            message: "Error",
+            description: msg,
+            placement: "topRight",
+        });
+    };
+
 
     const handleClick = async (direction: string) => {
         let res = null;
@@ -75,10 +95,17 @@ const RemoteControl: React.FC = () => {
                 console.error("Invalid direction:", direction);
                 return;
         }
+
+        if (res.status === 200) {
+            success("CargoBuddy should be moving now!")
+        } else {
+            error("Could not send command to CargoBuddy, please try again later.")
+        }
     };
 
     return (
         <Col xs={24} md={18} lg={12} style={{ height: 320 }}>
+            {contextHolder}
             <Card style={{ borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "100%" }}>
                 <Title level={3}>Remote Control</Title>
                 <Divider />

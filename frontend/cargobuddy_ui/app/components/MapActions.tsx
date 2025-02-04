@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { Col, Divider, Row, Button, Card, Typography, Modal, Steps, Result, Form, Upload, Spin, Image } from 'antd';
 import { CheckCircleTwoTone, ExclamationCircleTwoTone, InboxOutlined } from "@ant-design/icons";
+import { sendImage } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
 const steps = [
     { title: 'Add a map', content: 'First-content' },
     { title: 'Sending your map to CargoBuddy', content: 'Second-content' },
-    { title: 'Complete!', content: 'Third-content' }
+    { title: 'Result', content: 'Third-content' }
 ];
 
 const MapActions: React.FC = () => {
@@ -17,6 +18,7 @@ const MapActions: React.FC = () => {
     const [current, setCurrent] = useState<number>(0);
     const [fileList, setFileList] = useState<any[]>([]);
     const [uploading, setUploading] = useState<boolean>(false);
+    const [uploadingFailure, setUploadingFailure] = useState<boolean>(false)
     const [savedImage, setSavedImage] = useState<string | null>(null);
     const [form] = Form.useForm();
 
@@ -31,30 +33,56 @@ const MapActions: React.FC = () => {
     useEffect(() => {
         if (current === 1) {
             setUploading(true);
-
             console.log("File being processed: ", fileList);
 
-            // TODO: Make API call to send image to the robot
-            setTimeout(() => {
-                setUploading(false);
-                saveImageOnLocalStorage()
-                setCurrent(2);
-            }, 5000);
+            sendAndSaveFloorplan()
+                .then(() => {
+                    setUploadingFailure(false);
+                    setCurrent(2);
+                })
+                .catch(() => {
+                    setUploadingFailure(true);
+                    setCurrent(2);
+                })
+                .finally(() => {
+                    setUploading(false);
+                });
         }
     }, [current]);
 
-    const saveImageOnLocalStorage = () => {
+    const sendAndSaveFloorplan = async () => {
         const file = fileList[0]?.originFileObj;
-        if (!file) return
+        if (!file) return;
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => {
-            const base64String = reader.result as string;
-            localStorage.setItem("savedImage", base64String); // Save image to localStorage
-            setSavedImage(base64String); // Update state to display the image
-            console.log("Image saved to localStorage!");
-        };
-    }
+
+        return new Promise<void>((resolve, reject) => {
+            reader.onload = async () => {
+                try {
+                    const base64String = reader.result as string;
+
+                    const res = await sendImage(base64String);
+                    if (res.status !== 200) {
+                        console.log(res);
+                        setUploadingFailure(true);
+                        reject();
+                        return;
+                    }
+
+                    localStorage.setItem("savedImage", base64String);
+                    setSavedImage(base64String);
+                    console.log("✅ Image saved to localStorage!");
+
+                    resolve();
+                } catch (error) {
+                    console.error("❌ Error sending image:", error);
+                    setUploadingFailure(true);
+                    reject();
+                }
+            };
+        });
+    };
+
 
     const handleFileChange = ({ fileList }: any) => {
         setFileList(fileList);
@@ -75,6 +103,7 @@ const MapActions: React.FC = () => {
             setCurrent(0);
             setFileList([]);
             setUploading(false);
+            setUploadingFailure(false);
             form.resetFields();
         }
         setModalOpen((prev) => !prev);
@@ -84,36 +113,35 @@ const MapActions: React.FC = () => {
 
     return (
         <Col xs={24} md={18} lg={12}>
-            <Card style={{ borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                <Title level={3}>{savedImage ? <CheckCircleTwoTone /> : <ExclamationCircleTwoTone />} Map</Title>
+            <Card style={{ width: "100%", borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column" }}>
+                <Title level={3} style={{ width: "100%" }}>
+                    {savedImage ? <CheckCircleTwoTone /> : <ExclamationCircleTwoTone />} Map
+                </Title>
                 <Divider />
-                <Row gutter={[8, 8]} wrap={true}>
-                    {(!savedImage) ? (
+                <Row gutter={[8, 8]} wrap={true} style={{ width: "100%" }}>
+                    {!savedImage ? (
                         <>
-                            <Title level={5}>
+                            <Title level={5} style={{ width: "100%", textAlign: "center" }}>
                                 No map uploaded! Please upload your home's floorplan.
                             </Title>
-                            <Col xs={24}>
-                                <Button onClick={toggleOpenModal} type="primary" size="large" shape="round">
+                            <Col xs={24} style={{ display: "flex", justifyContent: "center" }}>
+                                <Button onClick={toggleOpenModal} type="primary" size="large" shape="round" style={{ width: "100%" }}>
                                     Add a Map
                                 </Button>
                             </Col>
                         </>
                     ) : (
-                        // I don't want the new floorplan to be shown in the background
-                        // while the modal is still open
-                        // that would be confusing
                         !modalOpen && (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Title level={5}>Current Floorplan:</Title>
+                            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <Title level={5} style={{ width: "100%", textAlign: "center" }}>Current Floorplan:</Title>
                                 <Image
                                     src={savedImage}
                                     alt="Saved Floorplan"
-                                    width={200}
-                                    style={{ borderRadius: "8px", marginBottom: "12px" }}
+                                    width="100%"
+                                    style={{ borderRadius: "8px", marginBottom: "12px", maxWidth: "300px" }}
                                 />
-                                <Col xs={24}>
-                                    <Button onClick={toggleOpenModal} type="primary" size="large" shape="round">
+                                <Col xs={24} style={{ display: "flex", justifyContent: "center" }}>
+                                    <Button onClick={toggleOpenModal} type="primary" size="large" shape="round" style={{ width: "100%" }}>
                                         Change Current Map
                                     </Button>
                                 </Col>
@@ -128,19 +156,26 @@ const MapActions: React.FC = () => {
                 open={modalOpen}
                 onCancel={toggleOpenModal}
                 footer={null}
+                style={{ maxWidth: "80%" }}
             >
-                <Steps current={current} items={steps.map((item) => ({ key: item.title, title: item.title }))} />
+                <Steps
+                    direction="vertical"
+                    current={current}
+                    style={{ marginBottom: 12, width: "100%" }}
+                    items={steps.map((item) => ({ key: item.title, title: item.title }))}
+                />
 
                 {/* Step 1: File Upload */}
                 {current === 0 && (
-                    <Form form={form}>
-                        <Form.Item name="fileUpload" noStyle>
+                    <Form form={form} style={{ width: "100%" }}>
+                        <Form.Item name="fileUpload" noStyle style={{ width: "100%" }}>
                             <Upload.Dragger
                                 maxCount={1}
                                 listType="picture"
                                 fileList={fileList}
                                 onChange={handleFileChange}
-                                beforeUpload={() => false} // Prevent automatic upload
+                                beforeUpload={() => false}
+                                style={{ width: "100%" }}
                             >
                                 <p className="ant-upload-drag-icon">
                                     <InboxOutlined />
@@ -154,9 +189,9 @@ const MapActions: React.FC = () => {
 
                 {/* Step 2: Send Floorplan to robot */}
                 {current === 1 && (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", width: "100%" }}>
                         <Spin size="large" />
-                        <Title level={5} style={{ textAlign: "center" }}>
+                        <Title level={5} style={{ textAlign: "center", width: "100%" }}>
                             Sending your floorplan to the robot! Please wait.
                         </Title>
                     </div>
@@ -164,29 +199,33 @@ const MapActions: React.FC = () => {
 
                 {/* Step 3: All done! */}
                 {current === 2 && (
-                    <Result status="success" title="You're all set!" />
+                    uploadingFailure ? <Result status="error" title="Could not send your floorplan to CargoBuddy."
+                        subTitle="Please try again later."
+                        style={{ width: "100%" }} />
+                        : <Result status="success" title="You're all set!" style={{ width: "100%" }} />
                 )}
 
                 {/* Navigation Buttons */}
-                <div style={{ marginTop: 24 }}>
+                <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between", width: "100%" }}>
+                    {current > 0 && (
+                        <Button style={{ marginRight: 8, flexGrow: 1 }} onClick={prev}>
+                            Previous
+                        </Button>
+                    )}
                     {current < steps.length - 1 && (
-                        <Button type="primary" onClick={next} disabled={isNextDisabled}>
+                        <Button type="primary" onClick={next} disabled={isNextDisabled} style={{ flexGrow: 1 }}>
                             Next
                         </Button>
                     )}
                     {current === steps.length - 1 && (
-                        <Button type="primary" onClick={toggleOpenModal}>
+                        <Button type="primary" onClick={toggleOpenModal} style={{ flexGrow: 1 }}>
                             Done
-                        </Button>
-                    )}
-                    {current > 0 && (
-                        <Button style={{ margin: '0 8px' }} onClick={prev}>
-                            Previous
                         </Button>
                     )}
                 </div>
             </Modal>
         </Col>
+
     );
 };
 

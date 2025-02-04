@@ -1,6 +1,7 @@
 "use client";
-import { Col, Divider, Row, Button, Card, Typography } from "antd";
+import { Col, Divider, Row, Button, Card, Typography, notification } from "antd";
 import { CaretRightOutlined, HeartFilled } from "@ant-design/icons";
+import { sendImage } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
@@ -18,24 +19,74 @@ interface ActionButtonProps {
 }
 
 // Action Button Component
-const ActionButton: React.FC<ActionButtonProps> = ({ action }) => (
-    <Col>
-        <Button
-            type="primary"
-            size="large"
-            style={{ height: 92 }}
-            icon={<CaretRightOutlined style={{ fontSize: 30 }} />}
-        >
-            <b>{action.actionName}</b>
-        </Button>
-    </Col>
-);
+const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
+    const [api, contextHolder] = notification.useNotification();
+
+    const inProgress = (msg: string) => {
+        api.info({
+            message: "Sending",
+            description: msg,
+            placement: "topRight",
+        });
+    };
+
+    const success = (msg: string) => {
+        api.success({
+            message: "Success",
+            description: msg,
+            placement: "topRight",
+        });
+    };
+
+    const error = (msg: string) => {
+        api.error({
+            message: "Error",
+            description: msg,
+            placement: "topRight",
+        });
+    };
+
+    const handleClick = async () => {
+        const savedFloorplan = localStorage.getItem("savedImage");
+        if (savedFloorplan) {
+            try {
+                inProgress("Sending command to CargoBuddy")
+                const res = await sendImage(savedFloorplan);
+                if (res.status !== 200) {
+                    error("Error sending command to CargoBuddy, please try again later.");
+                } else {
+                    success("Command sent successfully!");
+                }
+            } catch (err) {
+                error("Error sending command to CargoBuddy, please try again later.");
+            }
+        } else {
+            console.log("No saved floorplan!");
+            error("No saved floorplan found. Please upload one first.");
+        }
+    };
+
+    return (
+        <Col>
+            {contextHolder}
+            <Button
+                type="primary"
+                onClick={handleClick}
+                size="large"
+                style={{ height: 92 }}
+                icon={<CaretRightOutlined style={{ fontSize: 30 }} />}
+            >
+                <b>{action.actionName}</b>
+            </Button>
+        </Col>
+    );
+};
 
 // Favorite Actions Component
 const FavoriteActions: React.FC<FavoriteActionsProps> = ({ favoriteActions }) => {
     return (
         <Col xs={24} md={18} lg={12}>
-            <Card style={{ borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+            <Card style={{ minWidth: 200, borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                 <Title level={3}> <HeartFilled /> Favorites</Title>
                 <Divider />
 
