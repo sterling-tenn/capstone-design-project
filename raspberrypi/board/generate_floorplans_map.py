@@ -5,29 +5,29 @@ import cv2
 import numpy as np
 # import matplotlib.pyplot as plt
 
-def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15, 15), canny_threshold1=50, canny_threshold2=150, dilation_iterations=2, closing_kernel_size=(10, 10)):
-    """
-    Detects generalized edges in an image by resizing the image, applying a larger blur,
-    detecting edges, removing thin lines, and dilating the edges.
+# kumar: this changed from bw to clr image detection to detect that red destination dot
+# the bitmap looks fine tho to me, also gpt code so haha idk how things work here.
 
-    :param image_path: Path to the image file.
-    :param scale_percent: Percent of the original size to scale the image.
-    :param blur_kernel_size: Size of the Gaussian blur kernel.
-    :param canny_threshold1: First threshold for the hysteresis procedure in Canny.
-    :param canny_threshold2: Second threshold for the hysteresis procedure in Canny.
-    :param dilation_iterations: Number of times to apply dilation.
-    :param closing_kernel_size: Size of the kernel used in morphological closing.
-    :return: A 2D array representing thick, generalized edges.
+def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15, 15), 
+                             canny_threshold1=50, canny_threshold2=150, dilation_iterations=2, 
+                             closing_kernel_size=(10, 10)):
     """
-    # Read the image
-    image = cv2.imread(image_path)
+    Detects generalized edges in an image and also returns the resized color image for further processing.
+    """
+    # Read the original color image
+    color_image = cv2.imread(image_path)
+
     # Resize the image
-    image = cv2.resize(image, (int(image.shape[1] * scale_percent / 100), int(image.shape[0] * scale_percent / 100)), interpolation=cv2.INTER_AREA)
-    # Convert to grayscale
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    width = int(color_image.shape[1] * scale_percent / 100)
+    height = int(color_image.shape[0] * scale_percent / 100)
+    resized_color_image = cv2.resize(color_image, (width, height), interpolation=cv2.INTER_AREA)
+
+    # Convert to grayscale for edge detection
+    gray_image = cv2.cvtColor(resized_color_image, cv2.COLOR_BGR2GRAY)
 
     # Apply a larger blur
-    blurred_image = cv2.GaussianBlur(image, blur_kernel_size, 0)
+    blurred_image = cv2.GaussianBlur(gray_image, blur_kernel_size, 0)
+
     # Detect edges using Canny
     edges = cv2.Canny(blurred_image, canny_threshold1, canny_threshold2)
 
@@ -39,7 +39,8 @@ def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15,
     dilation_kernel = np.ones((5, 5), np.uint8)
     dilated_edges = cv2.dilate(closed_edges, dilation_kernel, iterations=dilation_iterations)
 
-    return dilated_edges
+    return dilated_edges, resized_color_image  # Return both grayscale edges and color image
+
 
 def average_pooling_binary(array, pool_size, threshold=127):
     """
@@ -82,21 +83,77 @@ def average_pooling_binary(array, pool_size, threshold=127):
 #     # Display the image
 #     plt.show()
 
+def detect_red_marker(image):
+    """
+    Detects a red marker in an image using HSV color thresholding.
+    Returns the center coordinates (x, y) of the red marker or None if not found.
+    """
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define red color range in HSV
+    lower_red1, upper_red1 = np.array([0, 120, 70]), np.array([10, 255, 255])
+    lower_red2, upper_red2 = np.array([170, 120, 70]), np.array([180, 255, 255])
+
+    # Create masks for red detection
+    mask = cv2.inRange(hsv, lower_red1, upper_red1) + cv2.inRange(hsv, lower_red2, upper_red2)
+
+    # Find contours of the detected red areas
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        M = cv2.moments(largest_contour)
+
+        if M["m00"] != 0:  # Avoid division by zero
+            cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
+            return cx, cy  # Center of the detected red marker
+    return None  # No marker found
+
+def mark_red_on_bitmap(binary_array, red_marker_coords, image_shape):
+    """
+    Marks the detected red marker on the binary map as '2' to distinguish it from walls (1) and open space (0).
+    """
+    if red_marker_coords:
+        marker_x = red_marker_coords[0] * binary_array.shape[1] // image_shape[1]
+        marker_y = red_marker_coords[1] * binary_array.shape[0] // image_shape[0]
+
+        # Ensure marker is within bounds
+        marker_x = min(marker_x, binary_array.shape[1] - 1)
+        marker_y = min(marker_y, binary_array.shape[0] - 1)
+
+        binary_array[marker_y, marker_x] = 2  # Assign '2' for red marker position
+
+    return binary_array
+
 def save_binary_map_txt(binary_array, output_path):
     """
-    Saves the binary map as a text file with 0s and 1s.
-
-    :param binary_array: 2D NumPy array of 0s and 1s.
-    :param output_path: Path to save the text file.
+    Saves the binary map as a text file with 0s, 1s, and 2s (for the red marker).
     """
     np.savetxt(output_path, binary_array, fmt='%d', delimiter='')
 
 def generate(image_path):
-    edges = detect_generalized_edges(image_path)
+    """
+    Full pipeline:
+    - Detects edges
+    - Converts them into a binary map
+    - Detects a red marker in the image
+    - Marks the red marker as '2' in the binary map
+    - Saves the final binary map as a text file
+    """
+    edges, resized_image = detect_generalized_edges(image_path)
     pooled_edges = average_pooling_binary(edges, pool_size=(6, 6))
-    # print(len(pooled_edges),len(pooled_edges[0]))
-    # display_edges(pooled_edges)
 
-    # Walls are represented by 1s and open areas by 0s
-    save_binary_map_txt(pooled_edges, "binary_map.txt")
+    # Detect red marker
+    red_marker_coords = detect_red_marker(resized_image)
+    print(f"Red Marker Found At: {red_marker_coords}")  # Debugging output
 
+    # Update binary map with red marker
+    updated_map = mark_red_on_bitmap(pooled_edges, red_marker_coords, resized_image.shape)
+
+    # Save updated binary map
+    save_binary_map_txt(updated_map, "binary_map.txt")
+
+    print("✅ Binary map generated and saved as binary_map.txt")
+
+# Run the processing pipeline
+generate("image.png")
