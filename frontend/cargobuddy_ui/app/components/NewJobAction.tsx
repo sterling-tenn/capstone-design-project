@@ -3,17 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Form, Image, Typography, Input } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { getImageSizeFromBase64 } from "../lib/ImagesCalls";
 
 const { Title } = Typography;
 
 interface NewJobActionProps {
-    handleSetAction: (actionName: string, info: object) => void;
+    handleSetAction: (actionName: string, dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => void;
 }
 
 const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [floorplan, setFloorplan] = useState<string | null>(null);
-    const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
+    const [marker, setMarker] = useState<{ x: number; y: number, adjustedX: number, adjustedY: number } | null>(null);
     const [form] = Form.useForm();
 
     // Fetch the stored floorplan from localStorage
@@ -23,6 +24,10 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
             setFloorplan(storedImage);
         }
     }, []);
+
+    useEffect(() => {
+        console.log(marker);
+    }, [marker]);
 
     // Open modal and reset form/marker
     const openModal = () => {
@@ -44,14 +49,26 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     };
 
     // Handle marker placement on the floorplan
-    const handleImageClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!floorplan) return;
 
+    
+    const handleImageClick = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!floorplan) return;
+    
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-
-        setMarker({ x, y });
+    
+        try {
+            const { width: imgWidth, height: imgHeight } = await getImageSizeFromBase64(floorplan);
+    
+            const adjustedX = Math.round((x / rect.width) * imgWidth);
+            const adjustedY = Math.round((y / rect.height) * imgHeight);
+    
+            setMarker({ x, y, adjustedX, adjustedY });
+            console.log(`🖍 Click Position: (${x}, ${y}), Adjusted: (${adjustedX}, ${adjustedY})`);
+        } catch (error) {
+            console.error("❌ Error getting image size:", error);
+        }
     };
 
     const handleSubmit = async () => {
@@ -60,8 +77,7 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
 
             console.log("Form values:", values);
             console.log("Marker position:", marker);
-
-            handleSetAction(values.jobName, { marker });
+            handleSetAction(values.jobName, marker);
 
             closeModal();
         } catch (errorInfo) {

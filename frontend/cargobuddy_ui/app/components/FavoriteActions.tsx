@@ -7,7 +7,7 @@ const { Title } = Typography;
 
 interface Action {
     actionName: string;
-    info: any;
+    dest: { x: number; y: number, adjustedX: number, adjustedY: number };
 }
 
 interface FavoriteActionsProps {
@@ -21,6 +21,8 @@ interface ActionButtonProps {
 // Action Button Component
 const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     const [api, contextHolder] = notification.useNotification();
+
+    const { actionName, dest } = action;
 
     const inProgress = (msg: string) => {
         api.info({
@@ -51,7 +53,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
         if (savedFloorplan) {
             try {
                 inProgress("Sending command to CargoBuddy")
-                const res = await sendImage(savedFloorplan);
+                const res = await sendImage(savedFloorplan, dest?.adjustedX, dest?.adjustedY);
                 if (res.status !== 200) {
                     error("Error sending command to CargoBuddy, please try again later.");
                 } else {
@@ -76,7 +78,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
                 style={{ height: 92 }}
                 icon={<CaretRightOutlined style={{ fontSize: 30 }} />}
             >
-                <b>{action.actionName}</b>
+                <b>{actionName}</b>
             </Button>
         </Col>
     );

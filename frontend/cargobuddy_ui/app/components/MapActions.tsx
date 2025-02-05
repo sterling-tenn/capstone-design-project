@@ -60,15 +60,6 @@ const MapActions: React.FC = () => {
             reader.onload = async () => {
                 try {
                     const base64String = reader.result as string;
-
-                    const res = await sendImage(base64String);
-                    if (res.status !== 200) {
-                        console.log(res);
-                        setUploadingFailure(true);
-                        reject();
-                        return;
-                    }
-
                     localStorage.setItem("savedImage", base64String);
                     setSavedImage(base64String);
                     console.log("✅ Image saved to localStorage!");

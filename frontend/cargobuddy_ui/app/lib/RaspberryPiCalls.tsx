@@ -21,12 +21,12 @@ const sendText = async (msg: string) => {
     }
 };
 
-export const sendImage = async (imageBase64: string) => {
+export const sendImage = async (imageBase64: string, x: Number, y: Number) => {
     try {
         const res = await fetch("/api/send-img", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageBase64 }),
+            body: JSON.stringify({ imageBase64, x, y}),
         });
 
         console.log("Response status:", res.status);
@@ -43,6 +43,9 @@ export const sendImage = async (imageBase64: string) => {
         return { error: error instanceof Error ? error.message : "Unknown error" };
     }
 };
+
+// send over the floorplan with a marker value
+
 
 // moving robot manually
 export const moveForward = async () => { return await sendText("move-forward"); }

@@ -21,10 +21,10 @@ export default function Home() {
     setActions(existingActions)
   }, []);
 
-  const handleSetAction = (actionName: string, info: any) => {
+  const handleSetAction = (actionName: string, dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => {
     console.log("action name", actionName);
     const existingActions = JSON.parse(localStorage.getItem("actions") || "[]");
-    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, info }] : [{ actionName, info }];
+    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, dest }] : [{ actionName, dest }];
     localStorage.setItem("actions", JSON.stringify(updatedActions));
     setActions(updatedActions);
   };
