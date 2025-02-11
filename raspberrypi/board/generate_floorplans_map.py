@@ -156,4 +156,4 @@ def generate(image_path):
     print("✅ Binary map generated and saved as binary_map.txt")
 
 # Run the processing pipeline
-generate("image.png")
+# generate("image.png")
