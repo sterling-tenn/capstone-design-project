@@ -1,5 +1,6 @@
 import numpy as np
 import conf as conf
+import random
 
 class MCLocalization:
     def __init__(self, map, num_particles=1024):
@@ -65,8 +66,13 @@ class MCLocalization:
         if Neff < self.num_particles / 2:
             self.num_particles <<= 1 
 
-        indices = np.random.choice(self._particles, size=self.num_particles, p=weights)
-        self._particles = self._particles[indices]
+        indices = random.choices(range(self.num_particles), k=self.num_particles, weights=weights)
+        
+        ret = []
+        for i in indices:
+            ret.append(self._particles[i])
+        
+        return ret
 
     def _distance(self, p, landmark):
         return np.sqrt((p[0] - landmark[0]) ** 2 + (p[1] - landmark[1]) ** 2)
