@@ -103,7 +103,7 @@ const MapActions: React.FC = () => {
     const isNextDisabled = current === 0 ? fileList.length === 0 : uploading;
 
     return (
-        <Col xs={24} md={18} lg={12}>
+        <Col xs={24} md={18} lg={12} style={{ width: "100%" }}>
             <Card style={{ width: "100%", borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column" }}>
                 <Title level={3} style={{ width: "100%" }}>
                     {savedImage ? <CheckCircleTwoTone /> : <ExclamationCircleTwoTone />} Map
@@ -125,18 +125,22 @@ const MapActions: React.FC = () => {
                         !modalOpen && (
                             <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
                                 <Title level={5} style={{ width: "100%", textAlign: "center" }}>Current Floorplan:</Title>
-                                <Image
-                                    src={savedImage}
-                                    alt="Saved Floorplan"
-                                    width="100%"
-                                    style={{ borderRadius: "8px", marginBottom: "12px", maxWidth: "300px" }}
-                                />
+
+                                <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                                    <Image
+                                        src={savedImage}
+                                        alt="Saved Floorplan"
+                                        style={{ borderRadius: "8px", marginBottom: "12px", maxWidth: "300px", width: "100%", objectFit: "contain" }}
+                                    />
+                                </div>
+
                                 <Col xs={24} style={{ display: "flex", justifyContent: "center" }}>
-                                    <Button onClick={toggleOpenModal} type="primary" size="large" shape="round" style={{ width: "100%" }}>
+                                    <Button onClick={toggleOpenModal} type="primary" size="large" shape="round" style={{ maxWidth: "300px", width: "100%" }}>
                                         Change Current Map
                                     </Button>
                                 </Col>
                             </div>
+
                         )
                     )}
                 </Row>
