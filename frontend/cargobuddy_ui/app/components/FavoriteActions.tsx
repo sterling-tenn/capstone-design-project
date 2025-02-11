@@ -88,7 +88,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
 // Favorite Actions Component
 const FavoriteActions: React.FC<FavoriteActionsProps> = ({ favoriteActions }) => {
     return (
-        <Col xs={24} md={18} lg={12}>
+        <Col xs={24} md={18} lg={12} style={{ width: "100%" }}>
             <Card style={{ minWidth: 200, borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                 <Title level={3}> <HeartFilled /> Favorites</Title>
                 <Divider />
