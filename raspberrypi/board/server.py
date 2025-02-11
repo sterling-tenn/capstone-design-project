@@ -9,6 +9,7 @@ import threading
 import time
 import struct
 import generate_floorplans_map
+from gyroscope import get_gyroscope_data, get_accelerometer_data, get_rotation_data
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
@@ -80,9 +81,6 @@ def move_forward():
     # print("Moving forward")
 
 def move_backward():
-    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
-        return
-        
     left_servo.value = BACKWARD
     right_servo.value = FORWARD
     # print("Moving backward")
@@ -194,6 +192,12 @@ def process_text_command(cmd):
         stop()
     elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
+    elif cmd.lower() == "get-gyroscope-data":
+        result = get_gyroscope_data()
+    elif cmd.lower() == "get-accelerometer-data":
+        result = get_accelerometer_data()
+    elif cmd.lower() == "get-rotation-data":
+        result = get_rotation_data()
     else:
         msg = f"Unknown command: {cmd}"
         print(f"Unknown command: {cmd}")

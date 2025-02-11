@@ -48,10 +48,7 @@ address = 0x68       # This is the address value read via the i2cdetect command
 # Now wake the 6050 up as it starts in sleep mode
 bus.write_byte_data(address, power_mgmt_1, 0)
 
-while True:
-    time.sleep(0.1)
-    print("=================================================")
-    
+def get_gyroscope_data():
     # Read gyroscope data
     gyro_xout = read_word_2c(0x43)
     gyro_yout = read_word_2c(0x45)
@@ -66,15 +63,18 @@ while True:
     # print(f"  X: {gyro_xout} raw, {gyro_xout_scaled:.2f} deg/s")
     # print(f"  Y: {gyro_yout} raw, {gyro_yout_scaled:.2f} deg/s")
     # print(f"  Z: {gyro_zout} raw, {gyro_zout_scaled:.2f} deg/s")
-    print(f"  X: {gyro_xout_scaled:.2f} deg/s")
-    print(f"  Y: {gyro_yout_scaled:.2f} deg/s")
-    print(f"  Z: {gyro_zout_scaled:.2f} deg/s")
+    # print(f"  X: {gyro_xout_scaled:.2f} deg/s")
+    # print(f"  Y: {gyro_yout_scaled:.2f} deg/s")
+    # print(f"  Z: {gyro_zout_scaled:.2f} deg/s") 
 
+    return gyro_xout_scaled, gyro_yout_scaled, gyro_zout_scaled
+
+def get_accelerometer_data():
     # Read accelerometer data
     accel_xout = read_word_2c(0x3b)
     accel_yout = read_word_2c(0x3d)
     accel_zout = read_word_2c(0x3f)
-    
+
     # Accelerometer data (g-forces)
     accel_xout_scaled = accel_xout / 16384.0
     accel_yout_scaled = accel_yout / 16384.0
@@ -84,16 +84,29 @@ while True:
     # print(f"  X: {accel_xout} raw, {accel_xout_scaled:.4f} g")
     # print(f"  Y: {accel_yout} raw, {accel_yout_scaled:.4f} g")
     # print(f"  Z: {accel_zout} raw, {accel_zout_scaled:.4f} g")
-    print(f"  X: {accel_xout_scaled:.4f} g")
-    print(f"  Y: {accel_yout_scaled:.4f} g")
-    print(f"  Z: {accel_zout_scaled:.4f} g")
-    
+    # print(f"  X: {accel_xout_scaled:.4f} g")
+    # print(f"  Y: {accel_yout_scaled:.4f} g")
+    # print(f"  Z: {accel_zout_scaled:.4f} g")
+
+    return accel_xout_scaled, accel_yout_scaled, accel_zout_scaled
+
+def get_rotation_data():
+    # Read accelerometer data
+    accel_xout = read_word_2c(0x3b)
+    accel_yout = read_word_2c(0x3d)
+    accel_zout = read_word_2c(0x3f)
+
+    # Accelerometer data (g-forces)
+    accel_xout_scaled = accel_xout / 16384.0
+    accel_yout_scaled = accel_yout / 16384.0
+    accel_zout_scaled = accel_zout / 16384.0
+
     # Calculate rotation
     x_rotation = get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
     y_rotation = get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
     
-    print(f"Rotation (in degrees):")
-    print(f"  X: {x_rotation:.2f}")
-    print(f"  Y: {y_rotation:.2f}")
-    
-    # time.sleep(1)
+    # print(f"Rotation (in degrees):")
+    # print(f"  X: {x_rotation:.2f}")
+    # print(f"  Y: {y_rotation:.2f}")
+
+    return x_rotation, y_rotation
