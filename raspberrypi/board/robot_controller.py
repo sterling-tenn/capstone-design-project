@@ -63,7 +63,7 @@ class RobotController:
             theta = self.gyro.get_next_heading(path[0][0]-curr_position[0], path[0][1]-curr_position[1], curr_position[2]) # Don't need abs for this. atan2 handles it
             
             if theta>0: self.movement.turn_left(theta) # https://support.microsoft.com/en-us/office/atan2-function-c04592ab-b9e3-4908-b428-c96b3a565033
-            else: self.movement.turn_right(theta)
+            else: self.movement.turn_right(-theta)
 
             next_movement = [abs(path[0][0]-curr_position[0]), abs(path[0][1]-curr_position[1]), theta]
             distance_to_move = self.gyro.dist(next_movement[0], next_movement[1])
@@ -162,7 +162,7 @@ class RobotController:
                         raise ValueError("Path is required for auto mcl mode")
                     if map is None:
                         raise ValueError("Map is required for auto mcl mode")
-                    self._move_robot_auto_mcl(path)
+                    self._move_robot_auto_mcl(map, path)
 
                 case 'auto':
                     input("Press Enter to start the automatic movement sequence")
