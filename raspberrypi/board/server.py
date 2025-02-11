@@ -80,9 +80,6 @@ def move_forward():
     # print("Moving forward")
 
 def move_backward():
-    if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
-        return
-        
     left_servo.value = BACKWARD
     right_servo.value = FORWARD
     # print("Moving backward")
