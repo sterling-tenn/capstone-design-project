@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { Col, Divider, Row, Button, Card, Typography, Modal, Steps, Result, Form, Upload, Spin, Image } from 'antd';
 import { CheckCircleTwoTone, ExclamationCircleTwoTone, InboxOutlined } from "@ant-design/icons";
-import { sendImage } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 

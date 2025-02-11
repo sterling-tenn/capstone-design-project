@@ -21,10 +21,11 @@ export default function Home() {
     setActions(existingActions)
   }, []);
 
-  const handleSetAction = (actionName: string, dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => {
+  const handleSetAction = (actionName: string, start: { x: number; y: number, adjustedX: number, adjustedY: number } | null,
+    dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => {
     console.log("action name", actionName);
     const existingActions = JSON.parse(localStorage.getItem("actions") || "[]");
-    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, dest }] : [{ actionName, dest }];
+    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, start, dest }] : [{ actionName, start, dest }];
     localStorage.setItem("actions", JSON.stringify(updatedActions));
     setActions(updatedActions);
   };
@@ -39,8 +40,8 @@ export default function Home() {
 
       <Content style={{ marginTop: "24px" }}>
         <Row style={{ flexDirection: "column" }} align="middle" gutter={[12, 12]} wrap={true}>
-          <Col xs={24} md={18} lg={12} style={{ width: "100%"}}>
-            <Card style={{ textAlign: "center", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)"}}>
+          <Col xs={24} md={18} lg={12} style={{ width: "100%" }}>
+            <Card style={{ textAlign: "center", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
               <Title level={2}>Welcome home.</Title>
             </Card>
           </Col>

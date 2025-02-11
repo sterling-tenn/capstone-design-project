@@ -17,43 +17,50 @@ const PORT = 5000;
 // the pi received the floorplan and converts it to a grid system
 // now, TODO is how to send the destination coords for it
 
-const addMarkerToImage = async (
+const addMarkersToImage = async (
     base64Image: string,
-    x: number,
-    y: number
+    start: { adjustedX: number; adjustedY: number },
+    dest: { adjustedX: number; adjustedY: number }
 ): Promise<string> => {
     try {
         // Decode Base64 into a Jimp image
         const buffer = Buffer.from(base64Image.split(",")[1], "base64");
         const image = await Jimp.read(buffer);
 
-        // Ensure image dimensions are known
         const width = image.bitmap.width;
         const height = image.bitmap.height;
-        console.log(`📏 Image dimensions: ${width} x ${height}`);
+        console.log(`Image dimensions: ${width} x ${height}`);
 
-        // Convert screen x, y to actual image pixels
-        const adjustedX = x;
-        const adjustedY = y;
-        console.log(`✅ Adjusted Coordinates: (${adjustedX}, ${adjustedY})`);
+        console.log(`Start Coordinates: (${start.adjustedX}, ${start.adjustedY})`);
+        console.log(`Destination Coordinates: (${dest.adjustedX}, ${dest.adjustedY})`);
 
-        // Define marker size and color (Red: #FF0000)
+        // Define marker size
         const markerSize = 10;
-        const markerColor = rgbaToInt(255, 0, 0, 255);
 
-        // Draw a circular marker
-        for (let dx = -markerSize; dx <= markerSize; dx++) {
-            for (let dy = -markerSize; dy <= markerSize; dy++) {
-                if (Math.sqrt(dx * dx + dy * dy) <= markerSize) {
-                    const markerX = adjustedX + dx;
-                    const markerY = adjustedY + dy;
-                    // Ensure marker stays inside the image bounds
-                    if (markerX >= 0 && markerX < width && markerY >= 0 && markerY < height) {
-                        image.setPixelColor(markerColor, markerX, markerY);
+        // Define colors
+        const startColor = rgbaToInt(0, 255, 0, 255); // Green
+        const destColor = rgbaToInt(255, 0, 0, 255); // Red
+
+        // Function to draw a circular marker
+        const drawMarker = (x: number, y: number, color: number) => {
+            for (let dx = -markerSize; dx <= markerSize; dx++) {
+                for (let dy = -markerSize; dy <= markerSize; dy++) {
+                    if (Math.sqrt(dx * dx + dy * dy) <= markerSize) {
+                        const markerX = x + dx;
+                        const markerY = y + dy;
+                        if (markerX >= 0 && markerX < width && markerY >= 0 && markerY < height) {
+                            image.setPixelColor(color, markerX, markerY);
+                        }
                     }
                 }
             }
-        }
+        };
+
+        // Draw the start marker (Green)
+        drawMarker(start.adjustedX, start.adjustedY, startColor);
+
+        // Draw the destination marker (Red)
+        drawMarker(dest.adjustedX, dest.adjustedY, destColor);
 
         // Convert modified image back to Base64
         const modifiedBase64 = await image.getBase64("image/png");
@@ -70,14 +77,14 @@ const addMarkerToImage = async (
 export async function POST(req: Request) {
     try {
         // Parse the request body
-        const { imageBase64, x, y } = await req.json();
+        const { imageBase64, start, dest } = await req.json();
 
         if (!imageBase64) {
             return NextResponse.json({ error: "No image data provided" }, { status: 400 });
         }
 
         // Convert Base64 string to Buffer
-        const markedImageBase64 = await addMarkerToImage(imageBase64, x, y)
+        const markedImageBase64 = await addMarkersToImage(imageBase64, start, dest)
 
         const imageBuffer = Buffer.from(markedImageBase64, "base64");
         const imageSize = imageBuffer.length;
