@@ -21,12 +21,16 @@ const sendText = async (msg: string) => {
     }
 };
 
-export const sendImage = async (imageBase64: string, x: Number, y: Number) => {
+export const sendImage = async (
+    imageBase64: string,
+    start: { x: number; y: number; adjustedX: number; adjustedY: number } | null,
+    dest: { x: number; y: number; adjustedX: number; adjustedY: number } | null
+) => {
     try {
         const res = await fetch("/api/send-img", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageBase64, x, y}),
+            body: JSON.stringify({ imageBase64, start, dest }),
         });
 
         console.log("Response status:", res.status);

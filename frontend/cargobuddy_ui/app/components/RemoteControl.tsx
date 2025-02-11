@@ -104,7 +104,7 @@ const RemoteControl: React.FC = () => {
     };
 
     return (
-        <Col xs={24} md={18} lg={12} style={{ height: 320 }}>
+        <Col xs={24} md={18} lg={12} style={{ width: "100%"}}>
             {contextHolder}
             <Card style={{ borderRadius: "12px", padding: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", height: "100%" }}>
                 <Title level={3}>Remote Control</Title>

@@ -1,23 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, Modal, Form, Image, Typography, Input } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, Modal, Form, Image, Typography, Input, Space } from "antd";
+import { PlusOutlined, CloseOutlined } from "@ant-design/icons";
 import { getImageSizeFromBase64 } from "../lib/ImagesCalls";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface NewJobActionProps {
-    handleSetAction: (actionName: string, dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => void;
+    handleSetAction: (
+        actionName: string,
+        start: { x: number; y: number; adjustedX: number; adjustedY: number } | null,
+        destination: { x: number; y: number; adjustedX: number; adjustedY: number } | null
+    ) => void;
 }
 
 const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [floorplan, setFloorplan] = useState<string | null>(null);
-    const [marker, setMarker] = useState<{ x: number; y: number, adjustedX: number, adjustedY: number } | null>(null);
+    const [startMarker, setStartMarker] = useState<{ x: number; y: number; adjustedX: number; adjustedY: number } | null>(null);
+    const [destinationMarker, setDestinationMarker] = useState<{ x: number; y: number; adjustedX: number; adjustedY: number } | null>(null);
     const [form] = Form.useForm();
 
-    // Fetch the stored floorplan from localStorage
+    // Fetch stored floorplan
     useEffect(() => {
         const storedImage = localStorage.getItem("savedImage");
         if (storedImage) {
@@ -26,14 +31,16 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     }, []);
 
     useEffect(() => {
-        console.log(marker);
-    }, [marker]);
+        console.log("Start Marker:", startMarker);
+        console.log("Destination Marker:", destinationMarker);
+    }, [startMarker, destinationMarker]);
 
-    // Open modal and reset form/marker
+    // Open modal and reset markers
     const openModal = () => {
-        setMarker(null); // Reset marker
+        setStartMarker(null);
+        setDestinationMarker(null);
         setModalOpen(true);
-        form.resetFields(); // Reset form fields when modal opens
+        form.resetFields();
 
         const storedImage = localStorage.getItem("savedImage");
         if (storedImage) {
@@ -41,31 +48,40 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
         }
     };
 
-    // Close modal and reset form
+    // Close modal
     const closeModal = () => {
         setModalOpen(false);
         form.resetFields();
-        setMarker(null);
+        setStartMarker(null);
+        setDestinationMarker(null);
     };
 
-    // Handle marker placement on the floorplan
+    // Clear markers function
+    const clearMarkers = () => {
+        setStartMarker(null);
+        setDestinationMarker(null);
+    };
 
-    
+    // Handle marker placement
     const handleImageClick = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!floorplan) return;
-    
+
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-    
+
         try {
             const { width: imgWidth, height: imgHeight } = await getImageSizeFromBase64(floorplan);
-    
             const adjustedX = Math.round((x / rect.width) * imgWidth);
             const adjustedY = Math.round((y / rect.height) * imgHeight);
-    
-            setMarker({ x, y, adjustedX, adjustedY });
-            console.log(`🖍 Click Position: (${x}, ${y}), Adjusted: (${adjustedX}, ${adjustedY})`);
+
+            if (!startMarker) {
+                setStartMarker({ x, y, adjustedX, adjustedY });
+                console.log(`🟢 Start Marker Set: (${x}, ${y}), Adjusted: (${adjustedX}, ${adjustedY})`);
+            } else if (!destinationMarker) {
+                setDestinationMarker({ x, y, adjustedX, adjustedY });
+                console.log(`🔴 Destination Marker Set: (${x}, ${y}), Adjusted: (${adjustedX}, ${adjustedY})`);
+            }
         } catch (error) {
             console.error("❌ Error getting image size:", error);
         }
@@ -75,9 +91,15 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
         try {
             const values = await form.validateFields();
 
+            if (!startMarker || !destinationMarker) {
+                console.error("🚨 Both start and destination markers are required!");
+                return;
+            }
+
             console.log("Form values:", values);
-            console.log("Marker position:", marker);
-            handleSetAction(values.jobName, marker);
+            console.log("Start marker:", startMarker);
+            console.log("Destination marker:", destinationMarker);
+            handleSetAction(values.jobName, startMarker, destinationMarker);
 
             closeModal();
         } catch (errorInfo) {
@@ -106,7 +128,19 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
                     >
                         <Input placeholder="Enter job name" />
                     </Form.Item>
-                    <Form.Item label={<Title level={5}>On the map below, tap and mark a point where you want the robot to go.</Title>}>
+
+                    {/* Dynamic Message */}
+                    <Text type="secondary" style={{ fontSize: "16px", display: "block", marginBottom: "12px" }}>
+                        {!startMarker
+                            ? "🟢 Set the starting location of the robot."
+                            : !destinationMarker
+                            ? "🔴 Select the destination of the robot."
+                            : "✅ Markers set. Click 'Submit' to continue or 'Clear Markers' to reset."}
+                    </Text>
+
+                    <Form.Item
+                        label={<Title level={5}>Tap on the map below to set a start and destination point.</Title>}
+                    >
                         {floorplan ? (
                             <div
                                 style={{
@@ -124,18 +158,35 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
                                     preview={false}
                                     style={{ borderRadius: "8px" }}
                                 />
-                                {marker && (
+                                {startMarker && (
                                     <div
                                         style={{
                                             position: "absolute",
-                                            top: marker.y,
-                                            left: marker.x,
-                                            width: "12px",
-                                            height: "12px",
+                                            top: startMarker.y,
+                                            left: startMarker.x,
+                                            width: "14px",
+                                            height: "14px",
+                                            backgroundColor: "green",
+                                            borderRadius: "50%",
+                                            transform: "translate(-50%, -50%)",
+                                            pointerEvents: "none",
+                                            border: "2px solid white",
+                                        }}
+                                    />
+                                )}
+                                {destinationMarker && (
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            top: destinationMarker.y,
+                                            left: destinationMarker.x,
+                                            width: "14px",
+                                            height: "14px",
                                             backgroundColor: "red",
                                             borderRadius: "50%",
                                             transform: "translate(-50%, -50%)",
                                             pointerEvents: "none",
+                                            border: "2px solid white",
                                         }}
                                     />
                                 )}
@@ -146,6 +197,15 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
                             </Title>
                         )}
                     </Form.Item>
+
+                    {/* Clear Markers Button */}
+                    {startMarker || destinationMarker ? (
+                        <Space style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                            <Button type="default" danger onClick={clearMarkers} icon={<CloseOutlined />}>
+                                Clear Markers
+                            </Button>
+                        </Space>
+                    ) : null}
                 </Form>
             </Modal>
         </>

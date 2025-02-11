@@ -3,9 +3,10 @@
 
 import cv2
 import numpy as np
-# import matplotlib.pyplot as plt
+import os
 
-# kumar: this changed from bw to clr image detection to detect that red destination dot
+
+# kumar: this changed from bw to clr image detection to detect that green and red start and destination dot respectively
 # the bitmap looks fine tho to me, also gpt code so haha idk how things work here.
 
 def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15, 15), 
@@ -109,10 +110,49 @@ def detect_red_marker(image):
             return cx, cy  # Center of the detected red marker
     return None  # No marker found
 
-def mark_red_on_bitmap(binary_array, red_marker_coords, image_shape):
+def detect_green_marker(image):
     """
-    Marks the detected red marker on the binary map as '2' to distinguish it from walls (1) and open space (0).
+    Detects a green marker in an image using HSV color thresholding.
+    Returns the center coordinates (x, y) of the green marker or None if not found.
     """
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define green color range in HSV
+    lower_green = np.array([40, 40, 40])   # Adjusted for better detection
+    upper_green = np.array([90, 255, 255]) # Covers most shades of green
+
+    # Create mask for green detection
+    mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Find contours of the detected green areas
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        M = cv2.moments(largest_contour)
+
+        if M["m00"] != 0:  # Avoid division by zero
+            cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
+            return cx, cy  # Center of the detected green marker
+
+    return None  # No green marker found
+
+
+def mark_on_bitmap(binary_array, green_marker_coords, red_marker_coords, image_shape):
+    """
+    Marks the detected green and red marker on the binary map.
+    """
+    
+    if green_marker_coords:
+        marker_x = green_marker_coords[0] * binary_array.shape[1] // image_shape[1]
+        marker_y = green_marker_coords[1] * binary_array.shape[0] // image_shape[0]
+
+        # Ensure marker is within bounds
+        marker_x = min(marker_x, binary_array.shape[1] - 1)
+        marker_y = min(marker_y, binary_array.shape[0] - 1)
+
+        binary_array[marker_y, marker_x] = 2  # Start marker
+
     if red_marker_coords:
         marker_x = red_marker_coords[0] * binary_array.shape[1] // image_shape[1]
         marker_y = red_marker_coords[1] * binary_array.shape[0] // image_shape[0]
@@ -121,15 +161,78 @@ def mark_red_on_bitmap(binary_array, red_marker_coords, image_shape):
         marker_x = min(marker_x, binary_array.shape[1] - 1)
         marker_y = min(marker_y, binary_array.shape[0] - 1)
 
-        binary_array[marker_y, marker_x] = 2  # Assign '2' for red marker position
+        binary_array[marker_y, marker_x] = 3  # Destination marker
 
     return binary_array
+
 
 def save_binary_map_txt(binary_array, output_path):
     """
     Saves the binary map as a text file with 0s, 1s, and 2s (for the red marker).
     """
     np.savetxt(output_path, binary_array, fmt='%d', delimiter='')
+    
+
+def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
+    """
+    Reads a bitmap text file and converts it into a coordinate system.
+
+    :param file_path: Path to the bitmap `.txt` file.
+    :param grid_scale: Scaling factor for real-world coordinates (default = 1).
+    :return: Dictionary containing coordinates for walls, open spaces, start, and destination.
+             Returns None if the file does not exist or is empty.
+    """
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        print(f"❌ File '{file_path}' not found.")
+        return None
+
+    try:
+        # Read the file into a list of rows
+        with open(file_path, "r") as f:
+            lines = [line.strip() for line in f.readlines() if line.strip()]  # Remove empty lines
+
+        # Convert the list of string rows into a 2D NumPy array
+        binary_map = np.array([list(map(int, list(row))) for row in lines])
+
+        # Check shape
+        if binary_map.ndim != 2:
+            print(f"❌ Error: Expected 2D binary map but got shape {binary_map.shape}")
+            return None
+
+        height, width = binary_map.shape
+        walls = []
+        open_space = []
+        start_point = None
+        destination_point = None
+
+        # Iterate through the grid
+        for y in range(height):
+            for x in range(width):
+                real_x = x * grid_scale  # Convert to real-world coordinate
+                real_y = y * grid_scale  # Convert to real-world coordinate
+
+                if binary_map[y, x] == 1:  # Walls
+                    walls.append((real_x, real_y))
+                elif binary_map[y, x] == 0:  # Open space
+                    open_space.append((real_x, real_y))
+                elif binary_map[y, x] == 2:  # Start marker (Green)
+                    start_point = (real_x, real_y)
+                elif binary_map[y, x] == 3:  # Destination marker (Red)
+                    destination_point = (real_x, real_y)
+
+        return {
+            "walls": walls,
+            "open_space": open_space,
+            "start": start_point,
+            "destination": destination_point
+        }
+
+    except Exception as e:
+        print(f"❌ Error reading file: {e}")
+        return None
+
 
 def generate(image_path):
     """
@@ -143,17 +246,19 @@ def generate(image_path):
     edges, resized_image = detect_generalized_edges(image_path)
     pooled_edges = average_pooling_binary(edges, pool_size=(6, 6))
 
-    # Detect red marker
     red_marker_coords = detect_red_marker(resized_image)
-    print(f"Red Marker Found At: {red_marker_coords}")  # Debugging output
-
-    # Update binary map with red marker
-    updated_map = mark_red_on_bitmap(pooled_edges, red_marker_coords, resized_image.shape)
+    green_marker_coords = detect_green_marker(resized_image)
+    
+    print(f"Red Marker Found At: {red_marker_coords}")
+    print(f"Green Marker Found At: {green_marker_coords}")
+    
+    # Update binary map with markers
+    updated_map = mark_on_bitmap(pooled_edges, green_marker_coords, red_marker_coords, resized_image.shape)
 
     # Save updated binary map
     save_binary_map_txt(updated_map, "binary_map.txt")
 
     print("✅ Binary map generated and saved as binary_map.txt")
 
-# Run the processing pipeline
-# generate("image.png")
+# generate("floorplans.png")
+# print(convert_bitmap_txt_to_coordinates())
