@@ -40,8 +40,12 @@ class RobotController:
 
         end_coordinates = path[-1]
 
-        self._mcl = MCLocalization(map)
+        
         curr_position = path[0] # Assume at start current position is the first path coordinate
+        curr_position.append(0)
+        print(curr_position)
+        self._mcl = MCLocalization(map, curr_position)
+
         theta = self.gyro.get_gyro()[0] # Need current heading x-axis value
         path.pop(0) # Remove starting position
         next_movement = [abs(path[0][0]-curr_position[0]), abs(path[0][1]-curr_position[1]), theta] # Assume next movement is going to next waypoint. Need all this info for mcl function
@@ -57,6 +61,8 @@ class RobotController:
             sensor_readings = [self._sensor_centre, self._sensor_left, self._sensor_right]
 
             curr_position = self._mcl.mcl(sensor_readings, next_movement)
+            print(curr_position)
+            print(path[0])
 
             if ((curr_position[0] == end_coordinates[0] and curr_position[1] == end_coordinates[1]) or len(path)==0): break # Reached the end. Should add margin to this for sure
 
