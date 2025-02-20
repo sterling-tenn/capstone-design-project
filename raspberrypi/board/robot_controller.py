@@ -1,6 +1,8 @@
 import json
 import conf as conf
 import math
+import threading
+import time
 from movement import Movement
 from distance_sensor import DistSensor
 from gyroscope import Gyro
@@ -30,6 +32,29 @@ class RobotController:
         self._sensor_left = DistSensor(conf.TRIGGER_PIN_LEFT, conf.ECHO_PIN_LEFT, conf.LEFT_SENSOR_ID)
         self._sensor_right = DistSensor(conf.TRIGGER_PIN_RIGHT, conf.ECHO_PIN_RIGHT, conf.RIGHT_SENSOR_ID)
 
+    def _read_sensors(self, sensors, collision_event, kill_event):
+        while not collision_event.is_set():
+            if kill_event.is_set(): return
+            c = sensors[0].get_distance()
+            l = sensors[1].get_distance()
+            r = sensors[2].get_distance()
+            # print(f"[Distances] Centre: {c:.2f} cm | Left: {l:.2f} cm | Right: {r:.2f} cm")
+
+            if c < conf.STOP_DISTANCE or l < conf.STOP_DISTANCE or r < conf.STOP_DISTANCE:
+                print("Obstacle detected! Stopping the robot.")
+                self.movement.stop()
+                collision_event.set()  # This will stop the sensor thread
+                self._handle_collision(collision_event)
+
+            time.sleep(0.1)
+    
+    def _handle_collision(self, collision_event):
+        # while True:
+        #     collision_event.wait() # Blocks until collision is detected
+        print("Executing collision recovery")
+        self.movement.move_backward(0.5) # Backup a bit
+        collision_event.clear() # No longer in threat of collision
+
     def _move_robot_auto_mcl(self, map_src_file, path_src_file):
         with open(map_src_file, "r") as file:
             map = json.load(file)
@@ -38,33 +63,49 @@ class RobotController:
             path_dict = json.load(file)
             path = path_dict["path"]
 
+        # to constantly read sensors in a separate thread
+        collision_event = threading.Event()
+        kill_event = threading.Event()
+        sensors = [self._sensor_centre, self._sensor_left, self._sensor_right]
+        sensor_thread = threading.Thread(target=self._read_sensors, args=(sensors, collision_event, kill_event))
+        # collision_handler_thread = threading.Thread(target=self._handle_collision, args=(collision_event))
+        sensor_thread.start()
+        # collision_handler_thread.start()
+
         end_coordinates = path[-1]
 
         
         curr_position = path[0] # Assume at start current position is the first path coordinate
         curr_position.append(0)
-        print(curr_position)
         self._mcl = MCLocalization(map, curr_position)
 
         theta = self.gyro.get_gyro()[0] # Need current heading x-axis value
         path.pop(0) # Remove starting position
         next_movement = [abs(path[0][0]-curr_position[0]), abs(path[0][1]-curr_position[1]), theta] # Assume next movement is going to next waypoint. Need all this info for mcl function
+        print(f'Next Waypoint: {path[0]}')
+        print(f'Current Position: {curr_position}')
         distance_to_move = self.gyro.dist(next_movement[0], next_movement[1]) # Hypontenuse to figure out how far to move
         # distance_to_move = math.sqrt(next_movement[0]**2, next_movement[1]**2) # Hypontenuse to figure out how far to move
 
         while True:
             self.movement.move_forward(distance_to_move) # Move
-            path.pop(0)
+
+            while (collision_event.is_set()): pass # Wait until collision_handler thread unsets the collision. MCL should recalculate new heading and distance to next waypoint based on current pos
             
             # Mcl Cycle
            # sensor_readings = [self._sensor_centre.get_distance(), self._sensor_left.get_distance(), self._sensor_right.get_distance()]
             sensor_readings = [self._sensor_centre, self._sensor_left, self._sensor_right]
 
             curr_position = self._mcl.mcl(sensor_readings, next_movement)
-            print(curr_position)
-            print(path[0])
 
-            if ((curr_position[0] == end_coordinates[0] and curr_position[1] == end_coordinates[1]) or len(path)==0): break # Reached the end. Should add margin to this for sure
+            path.pop(0)
+
+            if ((curr_position[0] == end_coordinates[0] and curr_position[1] == end_coordinates[1]) or len(path)==0):
+                kill_event.set() 
+                break # Reached the end. Should add margin to this for sure
+        
+            print(f'Next Waypoint: {path[0]}')
+            print(f'Current Position: {curr_position}')
 
             theta = self.gyro.get_next_heading(path[0][0]-curr_position[0], path[0][1]-curr_position[1], curr_position[2]) # Don't need abs for this. atan2 handles it
             
@@ -73,6 +114,9 @@ class RobotController:
 
             next_movement = [abs(path[0][0]-curr_position[0]), abs(path[0][1]-curr_position[1]), theta]
             distance_to_move = self.gyro.dist(next_movement[0], next_movement[1])
+
+        print(f'Current Position: {curr_position}')
+        sensor_thread.join()
 
     def _move_robot_auto(self, source_file):
         with open(source_file, "r") as file:
