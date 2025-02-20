@@ -45,6 +45,7 @@ ANGULAR_VELOCITY        = 6  # wheel/servo angular velocity in rad/s
 # particle filter
 SENSOR_SIGMA = 0.05 # standard deviation of sensor noise
 NULL_WEIGHT  = 0.0001
+MAP_SCALE = 1.0
 
 # Sensor IDs
 CENTOR_SENSOR_ID    = 0
