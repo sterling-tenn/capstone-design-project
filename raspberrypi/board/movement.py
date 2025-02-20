@@ -60,14 +60,16 @@ if __name__ == "__main__":
     pass
     move = Movement()
 
-    move.move_forward(0.5)
-    move.move_backward(0.5)
-    move.move_forward(1)
-    move.move_backward(1)
-
+    # move.move_forward(0.5)
+    # move.move_backward(0.5)
+    # move.move_forward(1)
+    # move.move_backward(1)
+    t.sleep(1)
     move.turn_right(90)
     move.turn_left(90)
+    t.sleep(3)
     move.turn_right(180)
     move.turn_left(180)
+    t.sleep(3)
     move.turn_right(360)
     move.turn_left(360)

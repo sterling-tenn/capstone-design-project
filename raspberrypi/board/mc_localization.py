@@ -3,8 +3,9 @@ import conf as conf
 import random
 
 class MCLocalization:
-    def __init__(self, map, num_particles=1024):
+    def __init__(self, map, start_position, num_particles=1024):
         self.reset = False
+        self.start_position = start_position
         self.num_particles = num_particles
         self._map = map["obstacles"]
         self._world_size = map["dimensions"]
@@ -12,9 +13,9 @@ class MCLocalization:
 
     def _init_particles(self, num_particles) -> np.ndarray:
         particles = np.zeros((num_particles, 3))  # 3 = [x, y, theta]
-        particles[:, 0] = np.random.uniform(0, self._world_size[0], size=num_particles)
-        particles[:, 1] = np.random.uniform(0, self._world_size[1], size=num_particles)
-        particles[:, 2] = np.random.uniform(0, 2 * np.pi, size=num_particles)
+        particles[:, 0] = random.gauss(self.start_position[0], conf.INIT_POS_SIGMA)
+        particles[:, 1] = random.gauss(self.start_position[1], conf.INIT_POS_SIGMA)
+        particles[:, 2] = random.gauss(self.start_position[2], conf.INIT_POS_SIGMA)
 
         print(particles)
         return particles                      
@@ -46,7 +47,7 @@ class MCLocalization:
 
                 # If the closest distance is still infinity, set weight to a very small value
                 if closest_distance == float('inf'):
-                    weights[idx] *= conf.NULL_WEIGHT
+                    weight = conf.NULL_WEIGHT
                 else:
                     weight = normalization_factor * np.exp(-((closest_distance - sensor.get_distance()) ** 2) / (2 * sigma_squared))    
 
