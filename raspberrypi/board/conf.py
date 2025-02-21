@@ -41,11 +41,11 @@ TIME_DELTA      = 0.001 # stall time in sec
 WHEEL_RADIUS            = 0.037 # radius of wheels in metres
 INTERNAL_TURN_RADIUS    = 0.205 # distance between centre and wheels in metres
 ANGULAR_VELOCITY        = 6  # wheel/servo angular velocity in rad/s
+SENSOR_FOV_ANGLE        = 10 # sensor field of view in degrees
 
 # particle filter
-INIT_POS_SIGMA = 1 # standard deviation of initial position in map
-SENSOR_SIGMA = 0.05 # standard deviation of sensor noise
-NULL_WEIGHT  = 0.0001
+INIT_POS_SIGMA = 3.5 # standard deviation of initial position in map
+SENSOR_SIGMA = 2.0 # standard deviation of sensor noise
 MAP_SCALE = 1.0
 
 # Sensor IDs

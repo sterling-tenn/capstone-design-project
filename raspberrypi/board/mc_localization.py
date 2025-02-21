@@ -23,6 +23,8 @@ class MCLocalization:
         particles[:, 0] = np.clip(particles[:, 0], 0, self._world_size[0])
         particles[:, 1] = np.clip(particles[:, 1], 0, self._world_size[1])
 
+        print("particles:", particles)
+
         return particles                      
 
     def _move_particles(self, move):
@@ -46,19 +48,25 @@ class MCLocalization:
 
             for idx in range(self.num_particles):
                 particle = self._particles[idx]
+                particle_x, particle_y, particle_theta = particle  # Unpack pose
 
-                closest_distance = min(
-                    self._distance(particle, landmark) for landmark in self._map
-                ) if len(self._map) > 0 else float('inf')
+                visible_landmarks = [
+                    landmark for landmark in self._map
+                    if self._is_in_field_of_view(particle, landmark)
+                ]
 
+                closest_distance = min(self._distance(particle, landmark) for landmark in visible_landmarks)
+                measured_distance = sensor.get_distance()
 
-                weight = (
-                    normalization_factor * np.exp(-((closest_distance - sensor.get_distance()) ** 2) / (2 * sigma_squared))
-                    if closest_distance != float('inf')
-                    else conf.NULL_WEIGHT
-                )
+                # Apply Gaussian probability model
+                weight = normalization_factor * np.exp(-((closest_distance - measured_distance) ** 2) / (2 * sigma_squared))
 
-                weights[idx] *= weight
+                # Angle penalty: Reduce weight if the landmark is not in the correct forward-facing direction
+                expected_angle = np.arctan2(visible_landmarks[0][1] - particle_y, visible_landmarks[0][0] - particle_x)
+                angle_diff = abs(expected_angle - particle_theta)
+                angle_penalty = np.exp(-angle_diff ** 2 / (2 * (np.pi / 8) ** 2))  # Penalize deviations > 22.5 degrees
+
+                weights[idx] *= weight * angle_penalty
 
         # Normalize weights, handle zero weights
         weights_sum = np.sum(weights)
@@ -69,10 +77,28 @@ class MCLocalization:
 
         return weights
 
+    def _is_in_field_of_view(self, particle, landmark) -> bool:
+        """Checks if a landmark is within the sensor's field of view."""
+        particle_x, particle_y, particle_theta = particle
+        landmark_x, landmark_y = landmark
+
+        angle_to_landmark = np.arctan2(landmark_y - particle_y, landmark_x - particle_x)
+        angle_diff = abs(angle_to_landmark - particle_theta)
+
+        return angle_diff < (conf.SENSOR_FOV_ANGLE / 2)  # Check if within half the field of view
+
     def _resample_particles(self, weights):
-        print("Weights:", weights)
-        indices = np.random.choice(self.num_particles, size=self.num_particles, p=weights)
-        return self._particles[indices]
+        # print("Weights:", weights)
+        indices = random.choices(range(self.num_particles), k=self.num_particles, weights=weights)
+
+        ret = []
+        for i in indices:
+            ret.append(self._particles[i])
+        ret = np.array([self._particles[i] for i in indices])  # Convert list to NumPy array
+
+        print("particles:", ret)
+
+        return ret
 
     def _distance(self, p, landmark):
         return np.sqrt((p[0] - landmark[0]) ** 2 + (p[1] - landmark[1]) ** 2) * conf.MAP_SCALE
@@ -99,11 +125,13 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     class FakeSensor:
-        def __init__(self, noise=0.5, max_distance=10):
+        def __init__(self, noise=0.025, max_distance=15):
             self.noise = noise
             self.max_distance = max_distance  # Maximum distance the sensor can measure
             self.distance = max_distance  # To be updated with each reading
         
+        def get_id(self):
+            return "FakeSensor"
         def update_distance(self, position, theta, obstacles):
             """
             Update the distance based on the robot's position and heading (theta).
@@ -115,7 +143,7 @@ if __name__ == "__main__":
             dy = math.sin(math.radians(theta))  # Direction vector along Y-axis
             
             # We will iterate in small steps along the direction of movement to find the obstacle
-            step_size = 0.1  # Step size for raycasting
+            step_size = 0.25  # Step size for raycasting
             current_distance = 0.0
             
             while current_distance < self.max_distance:
@@ -188,11 +216,11 @@ if __name__ == "__main__":
     }
 
     # Initialize MCL algorithm
-    start_position = [5.0, 5.0, -45.0]
-    mcl = MCLocalization(test_map, start_position, num_particles=100)
+    start_position = [4.0, 7.0, -45.0]
+    mcl = MCLocalization(test_map, start_position, num_particles=1000)
 
     # Fake sensors
-    sensors = [FakeSensor()]
+    sensors = [FakeSensor() for _ in range(1)]
 
     # Movement sequence for multiple steps
     movements = [
@@ -214,7 +242,9 @@ if __name__ == "__main__":
         estimated_position, std = mcl.mcl(sensors, move)
         theoretical_position = theoretical_position + np.array(move)
 
-        sensors[0].update_distance(theoretical_position[:2], theoretical_position[2], test_map["obstacles"])
+        for sensor in sensors:
+            sensor.update_distance(theoretical_position[:2], theoretical_position[2], test_map["obstacles"])
+            print(f"Sensor {sensor.get_id()} distance: {sensor.get_distance()}")
 
         print("Theoretical Position:", theoretical_position)
         print("Estimated Position:", estimated_position)
