@@ -23,7 +23,7 @@ class MCLocalization:
         particles[:, 0] = np.clip(particles[:, 0], 0, self._world_size[0])
         particles[:, 1] = np.clip(particles[:, 1], 0, self._world_size[1])
 
-        print("particles:", particles)
+        # print("particles:", particles)
 
         return particles                      
 
@@ -55,18 +55,22 @@ class MCLocalization:
                     if self._is_in_field_of_view(particle, landmark)
                 ]
 
-                closest_distance = min(self._distance(particle, landmark) for landmark in visible_landmarks)
-                measured_distance = sensor.get_distance()
+                if len(visible_landmarks) > 0:
+                    closest_distance = min(self._distance(particle, landmark) for landmark in visible_landmarks)
+                    measured_distance = sensor.get_distance()
 
-                # Apply Gaussian probability model
-                weight = normalization_factor * np.exp(-((closest_distance - measured_distance) ** 2) / (2 * sigma_squared))
+                    # Apply Gaussian probability model
+                    weight = normalization_factor * np.exp(-((closest_distance - measured_distance) ** 2) / (2 * sigma_squared))
 
-                # Angle penalty: Reduce weight if the landmark is not in the correct forward-facing direction
-                expected_angle = np.arctan2(visible_landmarks[0][1] - particle_y, visible_landmarks[0][0] - particle_x)
-                angle_diff = abs(expected_angle - particle_theta)
-                angle_penalty = np.exp(-angle_diff ** 2 / (2 * (np.pi / 8) ** 2))  # Penalize deviations > 22.5 degrees
+                    # Angle penalty: Reduce weight if the landmark is not in the correct forward-facing direction
+                    expected_angle = np.arctan2(visible_landmarks[0][1] - particle_y, visible_landmarks[0][0] - particle_x)
+                    angle_diff = abs(expected_angle - particle_theta)
+                    angle_penalty = np.exp(-angle_diff ** 2 / (2 * (np.pi / 8) ** 2))  # Penalize deviations > 22.5 degrees
 
-                weights[idx] *= weight * angle_penalty
+                    weights[idx] *= weight * angle_penalty
+
+                else: 
+                    weights[idx] = conf.NULL_WEIGHT
 
         # Normalize weights, handle zero weights
         weights_sum = np.sum(weights)
@@ -96,7 +100,7 @@ class MCLocalization:
             ret.append(self._particles[i])
         ret = np.array([self._particles[i] for i in indices])  # Convert list to NumPy array
 
-        print("particles:", ret)
+        # print("particles:", ret)
 
         return ret
 

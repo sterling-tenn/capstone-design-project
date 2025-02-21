@@ -44,9 +44,10 @@ ANGULAR_VELOCITY        = 6  # wheel/servo angular velocity in rad/s
 SENSOR_FOV_ANGLE        = 10 # sensor field of view in degrees
 
 # particle filter
-INIT_POS_SIGMA = 3.5 # standard deviation of initial position in map
-SENSOR_SIGMA = 2.0 # standard deviation of sensor noise
+INIT_POS_SIGMA = 1.5 # standard deviation of initial position in map
+SENSOR_SIGMA = 1.5 # standard deviation of sensor noise
 MAP_SCALE = 1.0
+NULL_WEIGHT = 0.001
 
 # Sensor IDs
 CENTOR_SENSOR_ID    = 0
