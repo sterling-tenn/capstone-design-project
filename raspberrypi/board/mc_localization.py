@@ -118,9 +118,9 @@ class MCLocalization:
         weights = self._update_particle_weights(sensors)  
         self._particles = self._resample_particles(weights)  
 
-        position_estimate = self._get_position_mean()  
-        std_dev = self._get_std_dev()
-        return position_estimate, std_dev 
+        # position_estimate = self._get_position_mean()  
+        # std_dev = self._get_std_dev()
+        # return position_estimate, std_dev 
 
 
 

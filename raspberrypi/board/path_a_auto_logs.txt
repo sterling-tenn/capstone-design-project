@@ -1,0 +1,18 @@
+Press Enter to start the automatic mcl movement sequenceCurrent Position - x: 1.99 y: 2.01 | Current Heading - 90.00 | Next Waypoint - x: 2.00 y: 2.60 | Turn towards waypoint: -1.17 deg
+Current Position - x: 2.01 y: 2.63 | Current Heading - 89.99 | Next Waypoint - x: 2.00 y: 3.20 | Turn towards waypoint: 0.95 deg
+Current Position - x: 1.97 y: 3.20 | Current Heading - 89.99 | Next Waypoint - x: 2.00 y: 3.70 | Turn towards waypoint: -2.95 deg
+Current Position - x: 2.04 y: 3.69 | Current Heading - 89.97 | Next Waypoint - x: 2.00 y: 4.20 | Turn towards waypoint: 4.38 deg
+Current Position - x: 2.01 y: 4.18 | Current Heading - 89.85 | Next Waypoint - x: 2.00 y: 4.70 | Turn towards waypoint: 1.57 deg
+Current Position - x: 1.94 y: 4.70 | Current Heading - 89.84 | Next Waypoint - x: 2.00 y: 5.20 | Turn towards waypoint: -6.35 deg
+Current Position - x: 2.00 y: 5.20 | Current Heading - 89.52 | Next Waypoint - x: 2.00 y: 5.70 | Turn towards waypoint: 1.04 deg
+Current Position - x: 1.97 y: 5.76 | Current Heading - 89.51 | Next Waypoint - x: 2.50 y: 6.00 | Turn towards waypoint: -65.09 deg
+Current Position - x: 2.47 y: 6.02 | Current Heading - 25.56 | Next Waypoint - x: 3.00 y: 6.00 | Turn towards waypoint: -27.34 deg
+Current Position - x: 3.02 y: 5.97 | Current Heading - 1.88 | Next Waypoint - x: 3.00 y: 5.40 | Turn towards waypoint: -93.89 deg
+Current Position - x: 2.96 y: 5.37 | Current Heading - -95.75 | Next Waypoint - x: 3.00 y: 4.80 | Turn towards waypoint: 9.53 deg
+Current Position - x: 3.01 y: 4.81 | Current Heading - -92.25 | Next Waypoint - x: 3.00 y: 4.30 | Turn towards waypoint: 1.56 deg
+Current Position - x: 3.03 y: 4.32 | Current Heading - -92.26 | Next Waypoint - x: 3.00 y: 3.80 | Turn towards waypoint: -0.59 deg
+Current Position - x: 5.41 y: 4.20 | Current Heading - -92.26 | Next Waypoint - x: 3.00 y: 4.10 | Turn towards waypoint: -85.48 deg
+Obstacle detected! Stopping the robot.
+Executing collision recovery
+Current Position - x: 3.00 y: 4.10 | Current Heading - -179.28 | Next Waypoint - x: 3.00 y: 3.50 | Turn towards waypoint: 89.28 deg
+END

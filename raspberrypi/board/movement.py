@@ -16,11 +16,19 @@ class Movement:
     def move_backward(self, distance: float) -> None:
         self._execute_movement(distance, self._move_backward_logic)
 
-    def turn_left(self, degrees: float) -> None:
+    def turn_left(self, degrees: float, turn_start_event, turn_end_event) -> None:
+        turn_start_event.set()
         self._execute_turn(degrees, self._turn_left_logic)
+        turn_start_event.clear()
+        turn_end_event.set()
+        t.sleep(0.05)
 
-    def turn_right(self, degrees: float) -> None:
+    def turn_right(self, degrees: float, turn_start_event, turn_end_event) -> None:
+        turn_start_event.set()
         self._execute_turn(degrees, self._turn_right_logic)
+        turn_start_event.clear()
+        turn_end_event.set()
+        t.sleep(0.05)
 
     def stop(self) -> None:
         self.left_servo.detach()

@@ -34,6 +34,7 @@ GYRO_SMBUS_NUMBER = 1
 
 # misc variables
 STOP_DISTANCE   = 20 # in cm, stop if sensors detect an object within this distance
+STOP_DISTANCE_SIDE_SENSORS = 25
 BLOCK_SIZE      = 0.1 # in m, size of a block on the grid/map
 TIME_DELTA      = 0.001 # stall time in sec
 
@@ -41,13 +42,16 @@ TIME_DELTA      = 0.001 # stall time in sec
 WHEEL_RADIUS            = 0.037 # radius of wheels in metres
 INTERNAL_TURN_RADIUS    = 0.205 # distance between centre and wheels in metres
 ANGULAR_VELOCITY        = 6  # wheel/servo angular velocity in rad/s
+LOOKAHEAD_DISTANCE = 0.5
+COLLISION_RECOVERY_MOVEMENT = 0.3
+STARTING_HEADING = 90
 SENSOR_FOV_ANGLE        = 10 # sensor field of view in degrees
 
 # particle filter
-INIT_POS_SIGMA  = 1.5 # standard deviation of initial position in map
-SENSOR_SIGMA    = 1.5 # standard deviation of sensor noise
-MAP_SCALE       = 1.0
-NULL_WEIGHT     = 0.001
+INIT_POS_SIGMA = 0.75 # standard deviation of initial position in map
+SENSOR_SIGMA = 1.5 # standard deviation of sensor noise
+MAP_SCALE = 0.1
+NULL_WEIGHT = 0.001
 
 # Sensor IDs
 CENTOR_SENSOR_ID    = 0
