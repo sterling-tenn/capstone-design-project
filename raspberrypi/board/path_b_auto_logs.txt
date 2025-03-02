@@ -1,0 +1,20 @@
+Press Enter to start the automatic mcl movement sequence
+Current Position - x: 4.98 y: 2.01 | Current Heading - 90.00 | Next Waypoint - x: 5.00 y: 2.60 | Turn towards waypoint: -1.61 deg
+Current Position - x: 5.01 y: 2.59 | Current Heading - 89.99 | Next Waypoint - x: 5.00 y: 3.10 | Turn towards waypoint: 0.66 deg
+Current Position - x: 5.00 y: 3.14 | Current Heading - 89.98 | Next Waypoint - x: 5.00 y: 3.70 | Turn towards waypoint: 0.48 deg
+Current Position - x: 5.00 y: 3.72 | Current Heading - 89.98 | Next Waypoint - x: 5.00 y: 4.30 | Turn towards waypoint: -0.34 deg
+Current Position - x: 5.01 y: 4.10 | Current Heading - 89.97 | Next Waypoint - x: 5.00 y: 4.60 | Turn towards waypoint: 0.70 deg
+Obstacle detected! Stopping the robot.
+Executing collision recovery
+Current Position - x: 4.98 y: 4.59 | Current Heading - 89.97 | Next Waypoint - x: 5.30 y: 5.00 | Turn towards waypoint: -37.90 deg
+Obstacle detected! Stopping the robot.
+Executing collision recovery
+Obstacle detected! Stopping the robot.
+Executing collision recovery
+Current Position - x: 5.31 y: 5.01 | Current Heading - 56.34 | Next Waypoint - x: 5.90 y: 5.00 | Turn towards waypoint: -56.97 deg
+Current Position - x: 5.93 y: 4.99 | Current Heading - 2.85 | Next Waypoint - x: 6.50 y: 5.00 | Turn towards waypoint: -2.11 deg
+Current Position - x: 6.48 y: 4.98 | Current Heading - 2.84 | Next Waypoint - x: 7.00 y: 5.00 | Turn towards waypoint: -1.05 deg
+Current Position - x: 7.00 y: 5.01 | Current Heading - 2.83 | Next Waypoint - x: 7.00 y: 5.60 | Turn towards waypoint: 87.39 deg
+Current Position - x: 7.08 y: 5.60 | Current Heading - 87.76 | Next Waypoint - x: 7.00 y: 6.10 | Turn towards waypoint: 11.64 deg
+Current Position - x: 6.98 y: 6.12 | Current Heading - 92.60 | Next Waypoint - x: 7.00 y: 6.70 | Turn towards waypoint: -4.18 deg
+END
