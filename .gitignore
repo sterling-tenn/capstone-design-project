@@ -18,3 +18,5 @@ raspberrypi/control-machine/__pycache__
 
 raspberrypi/board/env/
 raspberrypi/board/__pycache__
+frontend/cargobuddy_ui/.next
+frontend/cargobuddy_ui/node_modules
