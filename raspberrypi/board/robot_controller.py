@@ -306,7 +306,7 @@ class RobotController:
         try:
             match mode:
                 case 'auto_mcl':
-                    input("Press Enter to start the automatic mcl movement sequence")
+                    print("Starting automatic movement sequence with MCL")
                     if path is None:
                         raise ValueError("Path is required for auto mcl mode")
                     if map is None:
@@ -314,7 +314,7 @@ class RobotController:
                     self._move_robot_auto_mcl(map, path)
 
                 case 'auto':
-                    input("Press Enter to start the automatic movement sequence")
+                    print("Starting automatic movement sequence")
                     if path is None:
                         raise ValueError("File path is required for auto mode")
                     self._move_robot_auto(path)
