@@ -14,10 +14,11 @@ LOCAL_FILES=(
             "../board/mc_localization.py"
             "../board/astar.py"
             "../board/celltype.py"
+
+            # temp for testing
             # "../board/path_b.json"
             # "../board/map_b.json"
 
-            # temp for testing
             # "../board/auto.py"
             # "../board/manual.py"
             # "../board/path.json"
