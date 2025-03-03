@@ -85,7 +85,7 @@ class RobotController:
         #         lookahead_point = (px, py)
         # return lookahead_point
 
-    def _move_robot_auto_mcl(self, map_src_file, path_src_file):
+    def _move_robot_auto_mcl(self, map_src_file, path_src_file, mcl_stop_event):
         with open(map_src_file, "r") as file:
             map = json.load(file)
         
@@ -124,7 +124,7 @@ class RobotController:
         self._mcl = MCLocalization(map, [path[0][0], path[0][1], 0])
         collision_check = False
 
-        while True:
+        while not mcl_stop_event.is_set():
             while (collision_event.is_set()):  # Wait until collision_handler thread unsets the collision. MCL should recalculate new heading and distance to next waypoint based on current pos
                 collision_check = True
                 pass
@@ -317,7 +317,7 @@ class RobotController:
     def stop(self) -> None:
         self.movement.stop()
 
-    def run(self, mode, path=None, map=None):
+    def run(self, mode, path, map, mcl_stop_event):
         try:
             match mode:
                 case 'auto_mcl':
@@ -326,7 +326,7 @@ class RobotController:
                         raise ValueError("Path is required for auto mcl mode")
                     if map is None:
                         raise ValueError("Map is required for auto mcl mode")
-                    self._move_robot_auto_mcl(map, path)
+                    self._move_robot_auto_mcl(map, path, mcl_stop_event)
 
                 case 'auto':
                     print("Starting automatic movement sequence")
