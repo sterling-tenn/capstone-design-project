@@ -136,10 +136,10 @@ def handle_client(client_socket):
                 with open("floorplans.jpg", "wb") as f:
                     f.write(image_data)
                 print("Image received and saved as floorplans.jpg")
-                client_socket.send(b"Image received successfully")
 
                 # Generate Floorplans Map
                 generate_floorplans_map.generate("floorplans.jpg")
+                client_socket.send(b"Image received successfully. Floorplans map generated.")
             else:
                 print("Failed to receive image data.")
 
