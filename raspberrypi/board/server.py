@@ -136,10 +136,10 @@ def handle_client(client_socket):
                 with open("floorplans.jpg", "wb") as f:
                     f.write(image_data)
                 print("Image received and saved as floorplans.jpg")
-                client_socket.send(b"Image received successfully")
 
                 # Generate Floorplans Map
                 generate_floorplans_map.generate("floorplans.jpg")
+                client_socket.send(b"Image received successfully. Floorplans map generated.")
             else:
                 print("Failed to receive image data.")
 
@@ -166,6 +166,9 @@ def process_text_command(cmd):
     result = None
     msg = "OK"
 
+    if cmd.lower() in ["move-forward", "move-backward", "turn-left", "turn-right", "stop"]:
+        msg = stop_auto_mcl() # stops auto mcl if running
+
     if cmd.lower() == "move-forward":
         move_forward()
     elif cmd.lower() == "move-backward":
@@ -178,17 +181,56 @@ def process_text_command(cmd):
         stop()
     elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
-    elif cmd.lower() == "auto-mcl":
-        try:
-            robot_controller.run('auto_mcl', '/home/raspberrypi/capstone-design-project/raspberrypi/board/path_b.json', '/home/raspberrypi/capstone-design-project/raspberrypi/board/map_b.json')
-        except Exception as e:
-            msg = f"Error: {e}"
-            print(f"Error: {e}")
+    elif cmd.lower() == "start-auto-mcl":
+        msg = start_auto_mcl()
+    elif cmd.lower() == "stop-auto-mcl":
+        msg = stop_auto_mcl()
     else:
         msg = f"Unknown command: {cmd}"
         print(f"Unknown command: {cmd}")
 
     return result, msg
+
+# Global variables for thread management of MCL with robot_controller
+auto_mcl_thread = None
+mcl_stop_event = threading.Event()
+
+def run_auto_mcl():
+    """Runs robot_controller.run() with auto-mcl in a separate thread."""
+    global mcl_stop_event
+    try:
+        robot_controller.run(
+            'auto_mcl',
+            '/home/raspberrypi/CargoBuddy/path.json',
+            '/home/raspberrypi/CargoBuddy/map.json',
+            mcl_stop_event
+        )
+    except Exception as e:
+        print(f"Error in robot_controller.run(): {e}")
+
+def start_auto_mcl():
+    """Starts the auto mcl thread if it's not already running."""
+    global auto_mcl_thread, mcl_stop_event
+    if auto_mcl_thread and auto_mcl_thread.is_alive():
+        print("Auto MCL thread is already running.")
+        return "Auto MCL already running."
+
+    mcl_stop_event.clear()  # Reset stop event
+    auto_mcl_thread = threading.Thread(target=run_auto_mcl, daemon=True)
+    auto_mcl_thread.start()
+    print("Auto MCL started.")
+    return "Auto MCL started."
+
+def stop_auto_mcl():
+    """Stops the auto mcl thread."""
+    global auto_mcl_thread, mcl_stop_event
+    if auto_mcl_thread and auto_mcl_thread.is_alive():
+        mcl_stop_event.set()  # Signal the thread to stop
+        print("Stopping auto MCL thread...")
+        auto_mcl_thread.join()  # Wait for it to exit
+        print("Auto MCL stopped.")
+        return "Auto MCL stopped."
+    return "Auto MCL is not running."
 
 # Register stop() to be called on exit
 atexit.register(stop)

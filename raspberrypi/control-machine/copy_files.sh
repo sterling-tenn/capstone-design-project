@@ -12,10 +12,13 @@ LOCAL_FILES=(
             "../board/movement.py"
             "../board/distance_sensor.py"
             "../board/mc_localization.py"
-            "../board/path_b.json"
-            "../board/map_b.json"
+            "../board/astar.py"
+            "../board/celltype.py"
 
             # temp for testing
+            # "../board/path_b.json"
+            # "../board/map_b.json"
+
             # "../board/auto.py"
             # "../board/manual.py"
             # "../board/path.json"

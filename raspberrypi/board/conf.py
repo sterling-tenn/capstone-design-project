@@ -21,7 +21,7 @@ PWR_MGMT_2      = 0x6c
 # IR Sensor pins
 IR_SENSOR_PIN = 4 # GPIO 4, physical pin 7
 
-STOP_DISTANCE = 20 # in cm, stop if sensors detect an object within this distance
+STOP_DISTANCE = 15 # in cm, stop if sensors detect an object within this distance
 
 GYRO_ADDRESS    = 0x68         
 

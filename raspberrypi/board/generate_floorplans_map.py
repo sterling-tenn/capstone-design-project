@@ -279,14 +279,20 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
                 "obstacles": obstacles,
                 "dimensions": [width, height],
             }, f)
+        print("✅ Map generated and saved as map.json")
             
         with open("path.json", "w") as f:
             json.dump({"path": astar_path}, f)
+
             
         print("✅ Coordinates converted and saved as map.json and path.json.")
         print("Start point: ", start_point)
         print("Destination point: ", destination_point)
         
+
+        print("✅ Path generated and saved as path.json")
+
+
         return data
 
     except Exception as e:
@@ -324,5 +330,6 @@ def generate(image_path):
     
 
     print("✅ Binary map generated and saved as binary_map.txt")
+    convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1)
 
 # generate("e5_small.png")
