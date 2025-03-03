@@ -55,11 +55,11 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
             try {
                 inProgress("Sending command to CargoBuddy")
                 const res = await sendImage(savedFloorplan, start, dest);
-                if (res.status !== 200) {
-                    error("Error sending command to CargoBuddy, please try again later.");
-                } else {
-                    success("Command sent successfully!");
-                }
+                // if (res.status !== 200) {
+                //     error("Error sending command to CargoBuddy, please try again later.");
+                // } else {
+                //     success("Command sent successfully!");
+                // }
             } catch (err) {
                 error("Error sending command to CargoBuddy, please try again later.");
             }

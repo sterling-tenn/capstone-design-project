@@ -4,7 +4,8 @@
 import cv2
 import numpy as np
 import os
-
+from astar import Astar
+import json
 
 # kumar: this changed from bw to clr image detection to detect that green and red start and destination dot respectively
 # the bitmap looks fine tho to me, also gpt code so haha idk how things work here.
@@ -175,15 +176,8 @@ def save_binary_map_txt(binary_array, output_path):
 
 def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
     """
-    Reads a bitmap text file and converts it into a coordinate system.
-
-    :param file_path: Path to the bitmap `.txt` file.
-    :param grid_scale: Scaling factor for real-world coordinates (default = 1).
-    :return: Dictionary containing coordinates for walls, open spaces, start, and destination.
-             Returns None if the file does not exist or is empty.
+    Reads a bitmap text file and converts it into a coordinate system where (0,0) is at the bottom-left.
     """
-
-    # Check if file exists
     if not os.path.exists(file_path):
         print(f"❌ File '{file_path}' not found.")
         return None
@@ -191,47 +185,64 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
     try:
         # Read the file into a list of rows
         with open(file_path, "r") as f:
-            lines = [line.strip() for line in f.readlines() if line.strip()]  # Remove empty lines
+            lines = [line.strip() for line in f.readlines() if line.strip()]
 
-        # Convert the list of string rows into a 2D NumPy array
-        binary_map = np.array([list(map(int, list(row))) for row in lines])
-
-        # Check shape
-        if binary_map.ndim != 2:
-            print(f"❌ Error: Expected 2D binary map but got shape {binary_map.shape}")
+        if not lines:
+            print(f"❌ Error: The file '{file_path}' is empty.")
             return None
 
-        height, width = binary_map.shape
-        walls = []
-        open_space = []
-        start_point = None
-        destination_point = None
+        # Convert to 2D array
+        binary_map = np.array([list(map(int, list(row))) for row in lines])
 
-        # Iterate through the grid
+        height, width = binary_map.shape
+        obstacles, open_space = [], []
+        start_point, destination_point = None, None
+
+        # Flip Y-axis so (0,0) is bottom-left
         for y in range(height):
             for x in range(width):
-                real_x = x * grid_scale  # Convert to real-world coordinate
-                real_y = y * grid_scale  # Convert to real-world coordinate
+                real_x = x * grid_scale
+                real_y = (height - y - 1) * grid_scale  # Flip Y
 
-                if binary_map[y, x] == 1:  # Walls
-                    walls.append((real_x, real_y))
-                elif binary_map[y, x] == 0:  # Open space
+                if binary_map[y, x] == 1:
+                    obstacles.append((real_x, real_y))
+                elif binary_map[y, x] == 0:
                     open_space.append((real_x, real_y))
-                elif binary_map[y, x] == 2:  # Start marker (Green)
+                elif binary_map[y, x] == 2:
                     start_point = (real_x, real_y)
-                elif binary_map[y, x] == 3:  # Destination marker (Red)
+                elif binary_map[y, x] == 3:
                     destination_point = (real_x, real_y)
 
-        return {
-            "walls": walls,
-            "open_space": open_space,
-            "start": start_point,
-            "destination": destination_point
+        astar_path = []
+ 
+        if start_point and destination_point:
+            pathfinder = Astar(height, width, obstacles, start_point, destination_point)
+            astar_path = pathfinder.find_path()
+        else:
+            print("Missing start or destination marker in the file.")
+
+        data = {
+            "obstacles": obstacles,
+            "dimensions": [width, height],
+            "path": astar_path,
         }
+
+        # Save to JSON
+        with open("map.json", "w") as f:
+            json.dump({
+                "obstacles": obstacles,
+                "dimensions": [width, height],
+            }, f)
+            
+        with open("path.json", "w") as f:
+            json.dump({"path": astar_path}, f)
+
+        return data
 
     except Exception as e:
         print(f"❌ Error reading file: {e}")
         return None
+
 
 
 def generate(image_path):

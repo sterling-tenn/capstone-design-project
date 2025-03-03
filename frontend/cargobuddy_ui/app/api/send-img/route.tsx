@@ -9,7 +9,7 @@ import { rgbaToInt } from "@jimp/utils";
  * @returns JSON response.
  */
 
-const HOST = "192.168.226.60";
+const HOST = "192.168.216.60";
 const PORT = 5000;
 
 // send Image
@@ -65,7 +65,7 @@ const addMarkersToImage = async (
         // Convert modified image back to Base64
         const modifiedBase64 = await image.getBase64("image/png");
         console.log("✅ Marker placed successfully!");
-        console.log(modifiedBase64)
+        // console.log(modifiedBase64)
         return modifiedBase64;
     } catch (error) {
         console.error("❌ Error modifying image:", error);
