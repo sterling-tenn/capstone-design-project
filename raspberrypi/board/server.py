@@ -181,6 +181,7 @@ def process_text_command(cmd):
     elif cmd.lower() == "start-auto-mcl":
         msg = start_auto_mcl()
     elif cmd.lower() == "stop-auto-mcl":
+        stop()
         msg = stop_auto_mcl()
     else:
         msg = f"Unknown command: {cmd}"
