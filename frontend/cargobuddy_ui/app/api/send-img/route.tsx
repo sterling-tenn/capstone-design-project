@@ -21,7 +21,7 @@ const addMarkersToImage = async (
     base64Image: string,
     start: { adjustedX: number; adjustedY: number },
     dest: { adjustedX: number; adjustedY: number }
-): Promise<string> => {
+): Promise<Buffer> => {
     try {
         // Decode Base64 into a Jimp image
         const buffer = Buffer.from(base64Image.split(",")[1], "base64");
@@ -62,11 +62,17 @@ const addMarkersToImage = async (
         // Draw the destination marker (Red)
         drawMarker(dest.adjustedX, dest.adjustedY, destColor);
 
-        // Convert modified image back to Base64
+        // // Convert modified image back to Base64
         const modifiedBase64 = await image.getBase64("image/png");
         console.log("✅ Marker placed successfully!");
-        // console.log(modifiedBase64)
-        return modifiedBase64;
+        console.log("modifiedBase64", modifiedBase64)
+        // return modifiedBase64;
+
+        // return raw binary version
+        // Convert modified image to raw binary buffer
+        const rawBuffer = await image.getBuffer("image/png");
+        return rawBuffer;
+
     } catch (error) {
         console.error("❌ Error modifying image:", error);
         throw error;
@@ -84,10 +90,10 @@ export async function POST(req: Request) {
         }
 
         // Convert Base64 string to Buffer
-        const markedImageBase64 = await addMarkersToImage(imageBase64, start, dest)
+        const imageBuffer = await addMarkersToImage(imageBase64, start, dest)
 
-        const imageBuffer = Buffer.from(markedImageBase64, "base64");
         const imageSize = imageBuffer.length;
+
 
         console.log("✅ Received Base64 image:", imageSize, "bytes");
 
@@ -107,7 +113,7 @@ export async function POST(req: Request) {
                 const sizeBuffer = Buffer.alloc(4);
                 sizeBuffer.writeUInt32BE(imageSize, 0);
                 client.write(sizeBuffer);
-
+                
                 // Step 4: Send image data
                 client.write(imageBuffer);
                 console.log("📤 Image sent successfully!");
