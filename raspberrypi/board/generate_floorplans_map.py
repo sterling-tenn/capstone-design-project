@@ -201,22 +201,31 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
         # Flip Y-axis so (0,0) is bottom-left
         for y in range(height):
             for x in range(width):
-                real_x = x * grid_scale
-                real_y = (height - y - 1) * grid_scale  # Flip Y
+                # Convert to Cartesian coordinates
+                cartesian_x = x * grid_scale
+                cartesian_y = y * grid_scale  # No flipping; Y naturally increases
 
-                if binary_map[y, x] == 1:
-                    obstacles.append((real_x, real_y))
-                elif binary_map[y, x] == 0:
-                    open_space.append((real_x, real_y))
-                elif binary_map[y, x] == 2:
-                    start_point = (real_x, real_y)
-                elif binary_map[y, x] == 3:
-                    destination_point = (real_x, real_y)
+                if binary_map[height - y - 1, x] == 1:  # Flip Y index
+                    obstacles.append((cartesian_x, cartesian_y))
+                elif binary_map[height - y - 1, x] == 0:
+                    open_space.append((cartesian_x, cartesian_y))
+                elif binary_map[height - y - 1, x] == 2:
+                    start_point = (cartesian_x, cartesian_y)
+                elif binary_map[height - y - 1, x] == 3:
+                    destination_point = (cartesian_x, cartesian_y)
+
 
         astar_path = []
  
         if start_point and destination_point:
-            pathfinder = Astar(height, width, obstacles, start_point, destination_point)
+            pathfinder = Astar(
+                row=height,
+                col=width,
+                obstacles=obstacles,
+                start=start_point,
+                dest=destination_point
+            )
+
             astar_path = pathfinder.find_path()
         else:
             print("Missing start or destination marker in the file.")
@@ -236,7 +245,11 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
             
         with open("path.json", "w") as f:
             json.dump({"path": astar_path}, f)
-
+            
+        print("✅ Coordinates converted and saved as map.json and path.json.")
+        print("Start point: ", start_point)
+        print("Destination point: ", destination_point)
+        
         return data
 
     except Exception as e:
@@ -266,10 +279,13 @@ def generate(image_path):
     # Update binary map with markers
     updated_map = mark_on_bitmap(pooled_edges, green_marker_coords, red_marker_coords, resized_image.shape)
 
-    # Save updated binary map
+    
+    # # Save updated binary map
     save_binary_map_txt(updated_map, "binary_map.txt")
+    
+    convert_bitmap_txt_to_coordinates()
+    
 
     print("✅ Binary map generated and saved as binary_map.txt")
 
-# generate("floorplans.png")
-# print(convert_bitmap_txt_to_coordinates())
+# generate("floorplan_e5_p3_marked.png")
