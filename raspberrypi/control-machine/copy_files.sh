@@ -4,18 +4,24 @@
 # List of files to send
 LOCAL_FILES=(
             # required files for operation
-            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/conf.py"
-            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/server.py"
-            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/generate_floorplans_map.py"
-            "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/gyroscope.py"
+            "../board/conf.py"
+            "../board/server.py"
+            "../board/generate_floorplans_map.py"
+            "../board/gyroscope.py"
+            "../board/robot_controller.py"
+            "../board/movement.py"
+            "../board/distance_sensor.py"
+            "../board/mc_localization.py"
+            "../board/path_b.json"
+            "../board/map_b.json"
 
             # temp for testing
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/auto.py"
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/manual.py"
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/path.json"
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ir.py"
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/servo.py"
-            # "C:/Users/sterl/Desktop/capstone-design-project/raspberrypi/board/ultrasonic.py"
+            # "../board/auto.py"
+            # "../board/manual.py"
+            # "../board/path.json"
+            # "../board/ir.py"
+            # "../board/servo.py"
+            # "../board/ultrasonic.py"
             )
 
 REMOTE_USER="raspberrypi"

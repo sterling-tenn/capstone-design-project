@@ -9,19 +9,13 @@ import threading
 import time
 import struct
 import generate_floorplans_map
-from gyroscope import get_gyroscope_data, get_accelerometer_data, get_rotation_data
+from robot_controller import RobotController
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
 
-# Set GPIO for ultrasonic sensor
-sensor_centre = DistanceSensor(trigger=TRIGGER_PIN_CENTRE, echo=ECHO_PIN_CENTRE)
-sensor_left = DistanceSensor(trigger=TRIGGER_PIN_LEFT, echo=ECHO_PIN_LEFT)
-sensor_right = DistanceSensor(trigger=TRIGGER_PIN_RIGHT, echo=ECHO_PIN_RIGHT)
-
-# Set GPIO for servos
-left_servo = Servo(LEFT_SERVO_PIN)
-right_servo = Servo(RIGHT_SERVO_PIN)
+# Use RobotController for sensors and servo control/movement
+robot_controller = RobotController()
 
 # Set GPIO for IR sensor
 ir_sensor = LineSensor(IR_SENSOR_PIN)
@@ -36,6 +30,7 @@ def ground_detected():
 def no_ground_detected():
     global GROUND_DETECTED
     GROUND_DETECTED = False
+    print("Ground not detected. Stopping the robot.")
     stop()
 
 # Set callbacks for IR sensor
@@ -60,53 +55,44 @@ def front_obstacle_detected():
         time.sleep(0.1)
 
 def read_sensors():
-    centre, left, right = sensor_centre, sensor_left, sensor_right
+    centre, left, right = robot_controller._sensor_centre, robot_controller._sensor_left, robot_controller._sensor_right
     
-    # convert to cm
-    c = centre.distance * 100
-    l = left.distance * 100
-    r = right.distance * 100
+    c = centre.get_distance()
+    l = left.get_distance()
+    r = right.get_distance()
     # print(f"[Distances] Left: {l:.2f} cm | Centre: {c:.2f} cm | Right: {r:.2f} cm")
     return l, c, r
-
-FORWARD = 1
-BACKWARD = -1
 
 def move_forward():
     if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
-        
-    left_servo.value = FORWARD
-    right_servo.value = BACKWARD
-    # print("Moving forward")
+    
+    robot_controller.move_forward_logic()
+    print("Moving forward")
 
 def move_backward():
-    left_servo.value = BACKWARD
-    right_servo.value = FORWARD
-    # print("Moving backward")
+    robot_controller.move_backward_logic()
+    print("Moving backward")
 
 # counter clockwise
 def turn_left():
     if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
-        
-    left_servo.value = BACKWARD
-    right_servo.value = BACKWARD
-    # print("Turning left")
+    
+    robot_controller.turn_left_logic()
+    print("Turning left")
 
 # clockwise
 def turn_right():
     if not GROUND_DETECTED or FRONT_OBSTACLE_DETECTED:
         return
-        
-    left_servo.value = FORWARD
-    right_servo.value = FORWARD
-    # print("Turning right")
+
+    robot_controller.turn_right_logic()
+    print("Turning right")
 
 def stop():
-    left_servo.detach()
-    right_servo.detach()
-    # print("Stopping")
+    robot_controller.stop()
+    print("Stopping")
 
 def handle_client(client_socket):
     """Handles communication with a single client, processing text commands and image uploads."""
@@ -192,12 +178,12 @@ def process_text_command(cmd):
         stop()
     elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
-    elif cmd.lower() == "get-gyroscope-data":
-        result = get_gyroscope_data()
-    elif cmd.lower() == "get-accelerometer-data":
-        result = get_accelerometer_data()
-    elif cmd.lower() == "get-rotation-data":
-        result = get_rotation_data()
+    elif cmd.lower() == "auto-mcl":
+        try:
+            robot_controller.run('auto_mcl', '/home/raspberrypi/capstone-design-project/raspberrypi/board/path_b.json', '/home/raspberrypi/capstone-design-project/raspberrypi/board/map_b.json')
+        except Exception as e:
+            msg = f"Error: {e}"
+            print(f"Error: {e}")
     else:
         msg = f"Unknown command: {cmd}"
         print(f"Unknown command: {cmd}")
