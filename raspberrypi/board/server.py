@@ -180,7 +180,7 @@ def process_text_command(cmd):
         result = read_sensors()
     elif cmd.lower() == "auto-mcl":
         try:
-            robot_controller.run('auto_mcl', '/home/raspberrypi/capstone-design-project/raspberrypi/board/path_b.json', '/home/raspberrypi/capstone-design-project/raspberrypi/board/map_b.json')
+            robot_controller.run('auto_mcl', '/home/raspberrypi/CargoBuddy/path.json', '/home/raspberrypi/CargoBuddy/map.json')
         except Exception as e:
             msg = f"Error: {e}"
             print(f"Error: {e}")
