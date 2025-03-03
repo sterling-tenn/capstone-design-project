@@ -176,15 +176,8 @@ def save_binary_map_txt(binary_array, output_path):
 
 def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
     """
-    Reads a bitmap text file and converts it into a coordinate system.
-
-    :param file_path: Path to the bitmap `.txt` file.
-    :param grid_scale: Scaling factor for real-world coordinates (default = 1).
-    :return: Dictionary containing coordinates for walls, open spaces, start, and destination.
-             Returns None if the file does not exist or is empty.
+    Reads a bitmap text file and converts it into a coordinate system where (0,0) is at the bottom-left.
     """
-
-    # Check if file exists
     if not os.path.exists(file_path):
         print(f"❌ File '{file_path}' not found.")
         return None
@@ -192,51 +185,58 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
     try:
         # Read the file into a list of rows
         with open(file_path, "r") as f:
-            lines = [line.strip() for line in f.readlines() if line.strip()]  # Remove empty lines
+            lines = [line.strip() for line in f.readlines() if line.strip()]
 
-        # Convert the list of string rows into a 2D NumPy array
-        binary_map = np.array([list(map(int, list(row))) for row in lines])
-
-        # Check shape
-        if binary_map.ndim != 2:
-            print(f"❌ Error: Expected 2D binary map but got shape {binary_map.shape}")
+        if not lines:
+            print(f"❌ Error: The file '{file_path}' is empty.")
             return None
 
-        height, width = binary_map.shape
-        obstacles = []
-        open_space = []
-        start_point = None
-        destination_point = None
+        # Convert to 2D array
+        binary_map = np.array([list(map(int, list(row))) for row in lines])
 
-        # Iterate through the grid
+        height, width = binary_map.shape
+        obstacles, open_space = [], []
+        start_point, destination_point = None, None
+
+        # Flip Y-axis so (0,0) is bottom-left
         for y in range(height):
             for x in range(width):
-                real_x = x * grid_scale  # Convert to real-world coordinate
-                real_y = (height - y - 1) * grid_scale  # Flip the y-axis since we want bottom left to be 0,0
+                real_x = x * grid_scale
+                real_y = (height - y - 1) * grid_scale  # Flip Y
 
-                if binary_map[y, x] == 1:  # obstacles
+                if binary_map[y, x] == 1:
                     obstacles.append((real_x, real_y))
-                elif binary_map[y, x] == 0:  # Open space
+                elif binary_map[y, x] == 0:
                     open_space.append((real_x, real_y))
-                elif binary_map[y, x] == 2:  # Start marker (Green)
+                elif binary_map[y, x] == 2:
                     start_point = (real_x, real_y)
-                elif binary_map[y, x] == 3:  # Destination marker (Red)
+                elif binary_map[y, x] == 3:
                     destination_point = (real_x, real_y)
 
-        # Call Astar to get the path from start to destination
-        pathfinder = Astar(height, width, obstacles, start_point, destination_point)
-        astar_path = pathfinder.find_path()
-        
-        # Download the coords into a JSON file for MCL to read
+        astar_path = []
+ 
+        if start_point and destination_point:
+            pathfinder = Astar(height, width, obstacles, start_point, destination_point)
+            astar_path = pathfinder.find_path()
+        else:
+            print("Missing start or destination marker in the file.")
+
+        data = {
+            "obstacles": obstacles,
+            "dimensions": [width, height],
+            "path": astar_path,
+        }
+
+        # Save to JSON
         with open("map_info_coords.json", "w") as f:
-            json.dump({
-                "obstacles": obstacles,
-                "dimensions": [width, height],
-                "path": astar_path
-            }, f)
+            json.dump(data, f)
+
+        return data
 
     except Exception as e:
         print(f"❌ Error reading file: {e}")
+        return None
+
 
 
 def generate(image_path):
@@ -265,5 +265,5 @@ def generate(image_path):
 
     print("✅ Binary map generated and saved as binary_map.txt")
 
-# generate("floorplans.png")
+# generate("floorplan_e5.png")
 # print(convert_bitmap_txt_to_coordinates())
