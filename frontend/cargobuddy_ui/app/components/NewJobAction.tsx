@@ -11,12 +11,14 @@ interface NewJobActionProps {
     handleSetAction: (
         actionName: string,
         start: { x: number; y: number; adjustedX: number; adjustedY: number } | null,
-        destination: { x: number; y: number; adjustedX: number; adjustedY: number } | null
+        destination: { x: number; y: number; adjustedX: number; adjustedY: number } | null,
+        runMclCommand: Number,
     ) => void;
 }
 
 const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [counter, setCounter] = useState<number>(0);
     const [floorplan, setFloorplan] = useState<string | null>(null);
     const [startMarker, setStartMarker] = useState<{ x: number; y: number; adjustedX: number; adjustedY: number } | null>(null);
     const [destinationMarker, setDestinationMarker] = useState<{ x: number; y: number; adjustedX: number; adjustedY: number } | null>(null);
@@ -99,7 +101,9 @@ const NewJobAction: React.FC<NewJobActionProps> = ({ handleSetAction }) => {
             console.log("Form values:", values);
             console.log("Start marker:", startMarker);
             console.log("Destination marker:", destinationMarker);
-            handleSetAction(values.jobName, startMarker, destinationMarker);
+
+            handleSetAction(values.jobName, startMarker, destinationMarker, counter);
+            setCounter(counter === 0 ? 1 : 0);
 
             closeModal();
         } catch (errorInfo) {

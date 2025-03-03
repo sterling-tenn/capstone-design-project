@@ -57,3 +57,7 @@ export const moveBackwards = async () => { return await sendText("move-backward"
 export const turnLeft = async () => { return await sendText("turn-left"); }
 export const turnRight = async () => { return await sendText("turn-right"); }
 export const stop = async () => { return await sendText("stop"); }
+export const autoMcl = async () => { return await sendText("auto-mcl"); }
+// TODO: figure out what to do for automcl 2
+export const autoMcl2 = async () => { return await sendText("auto-mcl"); }
+

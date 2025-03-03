@@ -1,7 +1,7 @@
 "use client";
 import { Col, Divider, Row, Button, Card, Typography, notification } from "antd";
 import { CaretRightOutlined, HeartFilled } from "@ant-design/icons";
-import { sendImage } from "../lib/RaspberryPiCalls";
+import { autoMcl, autoMcl2, sendImage } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
@@ -9,6 +9,7 @@ interface Action {
     actionName: string;
     start: { x: number; y: number, adjustedX: number, adjustedY: number };
     dest: { x: number; y: number, adjustedX: number, adjustedY: number };
+    runMclCommand: Number;
 }
 
 interface FavoriteActionsProps {
@@ -23,7 +24,7 @@ interface ActionButtonProps {
 const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     const [api, contextHolder] = notification.useNotification();
 
-    const { actionName, start, dest } = action;
+    const { actionName, start, dest, runMclCommand } = action;
 
     const inProgress = (msg: string) => {
         api.info({
@@ -52,14 +53,10 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     const handleClick = async () => {
         const savedFloorplan = localStorage.getItem("savedImage");
         if (savedFloorplan) {
-            try {
+        try {
                 inProgress("Sending command to CargoBuddy")
-                const res = await sendImage(savedFloorplan, start, dest);
-                // if (res.status !== 200) {
-                //     error("Error sending command to CargoBuddy, please try again later.");
-                // } else {
-                //     success("Command sent successfully!");
-                // }
+                // const res = await sendImage(savedFloorplan, start, dest);
+                const res = runMclCommand === 0 ? await autoMcl() : await autoMcl2();
             } catch (err) {
                 error("Error sending command to CargoBuddy, please try again later.");
             }

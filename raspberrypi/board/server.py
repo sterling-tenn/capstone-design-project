@@ -184,6 +184,13 @@ def process_text_command(cmd):
         except Exception as e:
             msg = f"Error: {e}"
             print(f"Error: {e}")
+    # TODO: Figure out what to run for second demo cmd, ask Stefan - Kshitij Kumar
+    elif cmd.lower() == "auto-mcl2":
+        try:
+            robot_controller.run('auto_mcl', '/home/raspberrypi/CargoBuddy/path.json', '/home/raspberrypi/CargoBuddy/map.json')
+        except Exception as e:
+            msg = f"Error: {e}"
+            print(f"Error: {e}")
     else:
         msg = f"Unknown command: {cmd}"
         print(f"Unknown command: {cmd}")

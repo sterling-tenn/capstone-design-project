@@ -13,7 +13,7 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 
 export default function Home() {
-  // TODO: make parent cards 100% width of the col they're part of
+
   const [actions, setActions] = useState<any[]>([])
 
   useEffect(() => {
@@ -22,10 +22,9 @@ export default function Home() {
   }, []);
 
   const handleSetAction = (actionName: string, start: { x: number; y: number, adjustedX: number, adjustedY: number } | null,
-    dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null) => {
-    console.log("action name", actionName);
+    dest: { x: number; y: number, adjustedX: number, adjustedY: number } | null, runMclCommand: Number) => {
     const existingActions = JSON.parse(localStorage.getItem("actions") || "[]");
-    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, start, dest }] : [{ actionName, start, dest }];
+    const updatedActions = Array.isArray(existingActions) ? [...existingActions, { actionName, start, dest, runMclCommand }] : [{ actionName, start, dest, runMclCommand }];
     localStorage.setItem("actions", JSON.stringify(updatedActions));
     setActions(updatedActions);
   };
