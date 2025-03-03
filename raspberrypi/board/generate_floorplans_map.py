@@ -11,7 +11,7 @@ import json
 # the bitmap looks fine tho to me, also gpt code so haha idk how things work here.
 
 def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15, 15), 
-                             canny_threshold1=50, canny_threshold2=150, dilation_iterations=2, 
+                             canny_threshold1=100, canny_threshold2=200, dilation_iterations=2, 
                              closing_kernel_size=(10, 10)):
     """
     Detects generalized edges in an image and also returns the resized color image for further processing.
@@ -25,7 +25,7 @@ def detect_generalized_edges(image_path, scale_percent=50, blur_kernel_size=(15,
     resized_color_image = cv2.resize(color_image, (width, height), interpolation=cv2.INTER_AREA)
 
     # Convert to grayscale for edge detection
-    gray_image = cv2.cvtColor(resized_color_image, cv2.COLOR_BGR2GRAY)
+    gray_image = remove_red_green_objects(image_path, scale_percent)
 
     # Apply a larger blur
     blurred_image = cv2.GaussianBlur(gray_image, blur_kernel_size, 0)
@@ -84,6 +84,43 @@ def average_pooling_binary(array, pool_size, threshold=127):
 #     plt.axis('off')
 #     # Display the image
 #     plt.show()
+
+def remove_red_green_objects(image_path, scale_percent=50):
+    """
+    Removes red and green objects from an image by setting them to white.
+    """
+    # Read the original color image
+    color_image = cv2.imread(image_path)
+
+    # Resize the image
+    width = int(color_image.shape[1] * scale_percent / 100)
+    height = int(color_image.shape[0] * scale_percent / 100)
+    resized_color_image = cv2.resize(color_image, (width, height), interpolation=cv2.INTER_AREA)
+
+    # Convert to HSV for better color filtering
+    hsv = cv2.cvtColor(resized_color_image, cv2.COLOR_BGR2HSV)
+
+    # Define red color range in HSV
+    lower_red1, upper_red1 = np.array([0, 120, 70]), np.array([10, 255, 255])
+    lower_red2, upper_red2 = np.array([170, 120, 70]), np.array([180, 255, 255])
+    
+    # Define green color range in HSV
+    lower_green, upper_green = np.array([40, 40, 40]), np.array([90, 255, 255])
+
+    # Create masks for red and green detection
+    red_mask = cv2.inRange(hsv, lower_red1, upper_red1) + cv2.inRange(hsv, lower_red2, upper_red2)
+    green_mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Combine both masks
+    mask = red_mask + green_mask
+
+    # Set detected regions to white
+    resized_color_image[mask > 0] = [255, 255, 255]
+
+    # Convert to grayscale for edge detection
+    gray_image = cv2.cvtColor(resized_color_image, cv2.COLOR_BGR2GRAY)
+
+    return gray_image
 
 def detect_red_marker(image):
     """
@@ -201,22 +238,31 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
         # Flip Y-axis so (0,0) is bottom-left
         for y in range(height):
             for x in range(width):
-                real_x = x * grid_scale
-                real_y = (height - y - 1) * grid_scale  # Flip Y
+                # Convert to Cartesian coordinates
+                cartesian_x = x * grid_scale
+                cartesian_y = y * grid_scale  # No flipping; Y naturally increases
 
-                if binary_map[y, x] == 1:
-                    obstacles.append((real_x, real_y))
-                elif binary_map[y, x] == 0:
-                    open_space.append((real_x, real_y))
-                elif binary_map[y, x] == 2:
-                    start_point = (real_x, real_y)
-                elif binary_map[y, x] == 3:
-                    destination_point = (real_x, real_y)
+                if binary_map[height - y - 1, x] == 1:  # Flip Y index
+                    obstacles.append((cartesian_x, cartesian_y))
+                elif binary_map[height - y - 1, x] == 0:
+                    open_space.append((cartesian_x, cartesian_y))
+                elif binary_map[height - y - 1, x] == 2:
+                    start_point = (cartesian_x, cartesian_y)
+                elif binary_map[height - y - 1, x] == 3:
+                    destination_point = (cartesian_x, cartesian_y)
+
 
         astar_path = []
  
         if start_point and destination_point:
-            pathfinder = Astar(height, width, obstacles, start_point, destination_point)
+            pathfinder = Astar(
+                row=height,
+                col=width,
+                obstacles=obstacles,
+                start=start_point,
+                dest=destination_point
+            )
+
             astar_path = pathfinder.find_path()
         else:
             print("Missing start or destination marker in the file.")
@@ -237,7 +283,15 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
             
         with open("path.json", "w") as f:
             json.dump({"path": astar_path}, f)
+
+            
+        print("✅ Coordinates converted and saved as map.json and path.json.")
+        print("Start point: ", start_point)
+        print("Destination point: ", destination_point)
+        
+
         print("✅ Path generated and saved as path.json")
+
 
         return data
 
@@ -258,9 +312,9 @@ def generate(image_path):
     """
     edges, resized_image = detect_generalized_edges(image_path)
     pooled_edges = average_pooling_binary(edges, pool_size=(6, 6))
-
     red_marker_coords = detect_red_marker(resized_image)
     green_marker_coords = detect_green_marker(resized_image)
+
     
     print(f"Red Marker Found At: {red_marker_coords}")
     print(f"Green Marker Found At: {green_marker_coords}")
@@ -268,11 +322,14 @@ def generate(image_path):
     # Update binary map with markers
     updated_map = mark_on_bitmap(pooled_edges, green_marker_coords, red_marker_coords, resized_image.shape)
 
-    # Save updated binary map
+    
+    # # Save updated binary map
     save_binary_map_txt(updated_map, "binary_map.txt")
+    
+    convert_bitmap_txt_to_coordinates()
+    
 
     print("✅ Binary map generated and saved as binary_map.txt")
     convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1)
 
-# generate("floorplans.png")
-# print(convert_bitmap_txt_to_coordinates())
+# generate("e5_small.png")
