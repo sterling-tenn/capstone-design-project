@@ -228,8 +228,14 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
         }
 
         # Save to JSON
-        with open("map_info_coords.json", "w") as f:
-            json.dump(data, f)
+        with open("map.json", "w") as f:
+            json.dump({
+                "obstacles": obstacles,
+                "dimensions": [width, height],
+            }, f)
+            
+        with open("path.json", "w") as f:
+            json.dump({"path": astar_path}, f)
 
         return data
 
@@ -265,5 +271,5 @@ def generate(image_path):
 
     print("✅ Binary map generated and saved as binary_map.txt")
 
-# generate("floorplan_e5.png")
+# generate("floorplans.png")
 # print(convert_bitmap_txt_to_coordinates())
