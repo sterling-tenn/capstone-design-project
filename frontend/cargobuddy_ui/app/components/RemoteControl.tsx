@@ -96,11 +96,11 @@ const RemoteControl: React.FC = () => {
                 return;
         }
 
-        if (res.status === 200) {
-            success("CargoBuddy should be moving now!")
-        } else {
-            error("Could not send command to CargoBuddy, please try again later.")
-        }
+        // if (res.status === 200) {
+        //     success("CargoBuddy should be moving now!")
+        // } else {
+        //     error("Could not send command to CargoBuddy, please try again later.")
+        // }
     };
 
     return (

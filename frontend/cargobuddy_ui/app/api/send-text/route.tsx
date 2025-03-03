@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import net from "net";
 
-const HOST = "192.168.226.60";
+const HOST = "192.168.216.60";
 const PORT = 5000;
 
 // send Text

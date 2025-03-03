@@ -9,7 +9,7 @@ import { rgbaToInt } from "@jimp/utils";
  * @returns JSON response.
  */
 
-const HOST = "192.168.226.60";
+const HOST = "192.168.216.60";
 const PORT = 5000;
 
 // send Image
