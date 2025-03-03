@@ -166,9 +166,6 @@ def process_text_command(cmd):
     result = None
     msg = "OK"
 
-    if cmd.lower() in ["move-forward", "move-backward", "turn-left", "turn-right", "stop"]:
-        msg = stop_auto_mcl() # stops auto mcl if running
-
     if cmd.lower() == "move-forward":
         move_forward()
     elif cmd.lower() == "move-backward":
@@ -227,7 +224,7 @@ def stop_auto_mcl():
     if auto_mcl_thread and auto_mcl_thread.is_alive():
         mcl_stop_event.set()  # Signal the thread to stop
         print("Stopping auto MCL thread...")
-        auto_mcl_thread.join()  # Wait for it to exit
+        auto_mcl_thread.join(timeout=5)  # Wait for it to exit
         print("Auto MCL stopped.")
         return "Auto MCL stopped."
     return "Auto MCL is not running."
