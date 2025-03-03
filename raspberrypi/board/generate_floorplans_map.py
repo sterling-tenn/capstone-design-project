@@ -4,7 +4,8 @@
 import cv2
 import numpy as np
 import os
-
+from astar import Astar
+import json
 
 # kumar: this changed from bw to clr image detection to detect that green and red start and destination dot respectively
 # the bitmap looks fine tho to me, also gpt code so haha idk how things work here.
@@ -202,7 +203,7 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
             return None
 
         height, width = binary_map.shape
-        walls = []
+        obstacles = []
         open_space = []
         start_point = None
         destination_point = None
@@ -211,10 +212,10 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
         for y in range(height):
             for x in range(width):
                 real_x = x * grid_scale  # Convert to real-world coordinate
-                real_y = y * grid_scale  # Convert to real-world coordinate
+                real_y = (height - y - 1) * grid_scale  # Flip the y-axis since we want bottom left to be 0,0
 
-                if binary_map[y, x] == 1:  # Walls
-                    walls.append((real_x, real_y))
+                if binary_map[y, x] == 1:  # obstacles
+                    obstacles.append((real_x, real_y))
                 elif binary_map[y, x] == 0:  # Open space
                     open_space.append((real_x, real_y))
                 elif binary_map[y, x] == 2:  # Start marker (Green)
@@ -222,16 +223,20 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
                 elif binary_map[y, x] == 3:  # Destination marker (Red)
                     destination_point = (real_x, real_y)
 
-        return {
-            "walls": walls,
-            "open_space": open_space,
-            "start": start_point,
-            "destination": destination_point
-        }
+        # Call Astar to get the path from start to destination
+        pathfinder = Astar(height, width, obstacles, start_point, destination_point)
+        astar_path = pathfinder.find_path()
+        
+        # Download the coords into a JSON file for MCL to read
+        with open("map_info_coords.json", "w") as f:
+            json.dump({
+                "obstacles": obstacles,
+                "dimensions": [width, height],
+                "path": astar_path
+            }, f)
 
     except Exception as e:
         print(f"❌ Error reading file: {e}")
-        return None
 
 
 def generate(image_path):
