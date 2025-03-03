@@ -1,7 +1,8 @@
 "use client";
+import { useState } from "react";
 import { Col, Divider, Row, Button, Card, Typography, notification } from "antd";
-import { CaretRightOutlined, HeartFilled } from "@ant-design/icons";
-import { sendImage } from "../lib/RaspberryPiCalls";
+import { CaretRightOutlined, HeartFilled, PauseOutlined } from "@ant-design/icons";
+import { sendImage, stop } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
@@ -22,20 +23,13 @@ interface ActionButtonProps {
 // Action Button Component
 const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     const [api, contextHolder] = notification.useNotification();
+    const [buttonClicked, setButtonClicked] = useState(false);
 
     const { actionName, start, dest } = action;
 
     const inProgress = (msg: string) => {
         api.info({
             message: "Sending",
-            description: msg,
-            placement: "topRight",
-        });
-    };
-
-    const success = (msg: string) => {
-        api.success({
-            message: "Success",
             description: msg,
             placement: "topRight",
         });
@@ -50,16 +44,23 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     };
 
     const handleClick = async () => {
+
+        setButtonClicked(prev => !prev);
+
         const savedFloorplan = localStorage.getItem("savedImage");
         if (savedFloorplan) {
             try {
-                inProgress("Sending command to CargoBuddy")
-                const res = await sendImage(savedFloorplan, start, dest);
-                // if (res.status !== 200) {
-                //     error("Error sending command to CargoBuddy, please try again later.");
-                // } else {
-                //     success("Command sent successfully!");
-                // }
+                if (buttonClicked) {
+                    const res = await sendImage(savedFloorplan, start, dest);
+                    if (res) {
+                        setButtonClicked(false)
+                    }
+                } else {
+                    const res = await stop();
+                    if (res) {
+                        setButtonClicked(false);
+                    }
+                }
             } catch (err) {
                 error("Error sending command to CargoBuddy, please try again later.");
             }
@@ -72,15 +73,26 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     return (
         <Col>
             {contextHolder}
-            <Button
-                type="primary"
+            {buttonClicked ? <Button
+                type={"primary"}
+                onClick={handleClick}
+                size="large"
+                style={{ height: 92 }}
+                icon={<PauseOutlined style={{ fontSize: 30 }} />}
+                danger
+            >
+                <b>{actionName}</b>
+            </Button> 
+            : <Button
+                type={"primary"}
                 onClick={handleClick}
                 size="large"
                 style={{ height: 92 }}
                 icon={<CaretRightOutlined style={{ fontSize: 30 }} />}
             >
                 <b>{actionName}</b>
-            </Button>
+            </Button>}
+
         </Col>
     );
 };

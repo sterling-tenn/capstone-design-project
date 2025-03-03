@@ -139,6 +139,10 @@ def handle_client(client_socket):
 
                 # Generate Floorplans Map
                 generate_floorplans_map.generate("floorplans.jpg")
+                
+                # uses map info from generate to run the robot
+                msg = start_auto_mcl()
+                
                 client_socket.send(b"Image received successfully. Floorplans map generated.")
             else:
                 print("Failed to receive image data.")
