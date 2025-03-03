@@ -300,6 +300,33 @@ def convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1):
         return None
 
 
+def find_island_borders(grid: list[list[int]]) -> list[list[int]]:
+    if not grid or not grid[0]:
+        return grid
+    
+    rows, cols = len(grid), len(grid[0])
+    result = [[grid[r][c] if grid[r][c] in {2, 3} else 0 for c in range(cols)] for r in range(rows)]
+
+    # Directions for checking neighbors (up, down, left, right)
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    def is_border(r: int, c: int) -> bool:
+        """Check if a cell is a border of an island."""
+        if grid[r][c] == 0 or grid[r][c] in {2, 3}:
+            return False
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if nr < 0 or nr >= rows or nc < 0 or nc >= cols or grid[nr][nc] == 0:
+                return True
+        return False
+
+    # Populate the result grid with only the borders, keeping 2s and 3s unchanged
+    for r in range(rows):
+        for c in range(cols):
+            if is_border(r, c):
+                result[r][c] = 1
+
+    return result
 
 def generate(image_path):
     """
@@ -321,7 +348,7 @@ def generate(image_path):
     
     # Update binary map with markers
     updated_map = mark_on_bitmap(pooled_edges, green_marker_coords, red_marker_coords, resized_image.shape)
-
+    updated_map = find_island_borders(updated_map.tolist())
     
     # # Save updated binary map
     save_binary_map_txt(updated_map, "binary_map.txt")
@@ -332,4 +359,4 @@ def generate(image_path):
     print("✅ Binary map generated and saved as binary_map.txt")
     convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1)
 
-# generate("e5_small.png")
+generate("e5_small.png")
