@@ -301,6 +301,21 @@ class RobotController:
                     print("Stopping", end="\r")
                     self.movement.stop()
                     current_command = None
+    
+    def move_forward_logic(self) -> None:
+        self.movement._move_forward_logic()
+
+    def move_backward_logic(self) -> None:
+        self.movement._move_backward_logic()
+
+    def turn_left_logic(self) -> None:
+        self.movement._turn_left_logic()
+
+    def turn_right_logic(self) -> None:
+        self.movement._turn_right_logic()
+
+    def stop(self) -> None:
+        self.movement.stop()
 
     def run(self, mode, path=None, map=None):
         try:
