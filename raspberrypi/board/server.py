@@ -183,7 +183,9 @@ def process_text_command(cmd):
     elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
     elif cmd.lower() == "start-auto-mcl":
-        msg = start_auto_mcl()
+        msg = start_auto_mcl(demo=False)
+    elif cmd.lower() == "start-auto-mcl-demo":
+        msg = start_auto_mcl(demo=True)
     elif cmd.lower() == "stop-auto-mcl":
         stop()
         msg = stop_auto_mcl()
@@ -197,20 +199,30 @@ def process_text_command(cmd):
 auto_mcl_thread = None
 mcl_stop_event = threading.Event()
 
-def run_auto_mcl():
+def run_auto_mcl(demo):
     """Runs robot_controller.run() with auto-mcl in a separate thread."""
     global mcl_stop_event
     try:
-        robot_controller.run(
-            'auto_mcl',
-            '/home/raspberrypi/CargoBuddy/path.json',
-            '/home/raspberrypi/CargoBuddy/map.json',
-            mcl_stop_event
-        )
+        if demo:
+            print("Running auto MCL with demo maps...")
+            robot_controller.run(
+                'auto_mcl',
+                '/home/raspberrypi/CargoBuddy/path_demo.json',
+                '/home/raspberrypi/CargoBuddy/map_demo.json',
+                mcl_stop_event
+            )
+        else:
+            print("Running auto MCL...")
+            robot_controller.run(
+                'auto_mcl',
+                '/home/raspberrypi/CargoBuddy/path.json',
+                '/home/raspberrypi/CargoBuddy/map.json',
+                mcl_stop_event
+            )
     except Exception as e:
         print(f"Error in robot_controller.run(): {e}")
 
-def start_auto_mcl():
+def start_auto_mcl(demo):
     """Starts the auto mcl thread if it's not already running."""
     global auto_mcl_thread, mcl_stop_event
     if auto_mcl_thread and auto_mcl_thread.is_alive():
@@ -218,7 +230,7 @@ def start_auto_mcl():
         return "Auto MCL already running."
 
     mcl_stop_event.clear()  # Reset stop event
-    auto_mcl_thread = threading.Thread(target=run_auto_mcl, daemon=True)
+    auto_mcl_thread = threading.Thread(target=run_auto_mcl, args=(demo,), daemon=True)
     auto_mcl_thread.start()
     print("Auto MCL started.")
     return "Auto MCL started."
