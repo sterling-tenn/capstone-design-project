@@ -10,9 +10,16 @@ import time
 import struct
 import generate_floorplans_map
 from robot_controller import RobotController
+import sys
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
+
+# Open log file in append mode and redirect stdout & stderr
+log_file = "./cargobuddy.log"
+sys.stdout = open(log_file, "a")
+sys.stderr = sys.stdout
+sys.stdout.reconfigure(line_buffering=True) # Flush output immediately
 
 # Use RobotController for sensors and servo control/movement
 robot_controller = RobotController()
