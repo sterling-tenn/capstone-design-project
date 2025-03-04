@@ -16,8 +16,8 @@ LOCAL_FILES=(
             "../board/celltype.py"
 
             # temp for testing
-            # "../board/path_b.json"
-            # "../board/map_b.json"
+            "../board/path_demo.json"
+            "../board/map_demo.json"
 
             # "../board/auto.py"
             # "../board/manual.py"
