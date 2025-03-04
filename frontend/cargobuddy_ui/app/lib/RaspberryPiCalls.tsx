@@ -57,4 +57,5 @@ export const moveBackwards = async () => { return await sendText("move-backward"
 export const turnLeft = async () => { return await sendText("turn-left"); }
 export const turnRight = async () => { return await sendText("turn-right"); }
 export const stop = async () => { return await sendText("stop"); }
+export const startAutoMclDemo = async () => { return await sendText("start-auto-mcl-demo"); }
 export const stopMcl = async () => { return await sendText("stop-auto-mcl"); }

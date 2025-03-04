@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Col, Divider, Row, Button, Card, Typography, notification } from "antd";
 import { CaretRightOutlined, HeartFilled, PauseOutlined } from "@ant-design/icons";
-import { sendImage, stopMcl } from "../lib/RaspberryPiCalls";
+import { sendImage, stopMcl, startAutoMclDemo } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
@@ -56,7 +56,8 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
             let res = null;
             if (!buttonClicked) {
                 inProgress("Sending floorplan to CargoBuddy...");
-                res = await sendImage(savedFloorplan, start, dest);
+                // res = await sendImage(savedFloorplan, start, dest);
+                res = await startAutoMclDemo();
             } else {
                 inProgress("Stopping CargoBuddy...");
                 res = await stopMcl();
