@@ -14,7 +14,7 @@ import sys
 
 HOST = "0.0.0.0" # Listen on all available interfaces
 PORT = 5000
-
+MOVING_FORWARD = False
 # Open log file in append mode and redirect stdout & stderr
 log_file = "./cargobuddy.log"
 sys.stdout = open(log_file, "a")
@@ -49,10 +49,11 @@ FRONT_OBSTACLE_DETECTED = False
 
 def front_obstacle_detected():
     global FRONT_OBSTACLE_DETECTED
+    global auto_mcl_thread, mcl_stop_event
     while True:
         l, c, r = read_sensors()
 
-        if c < STOP_DISTANCE or l < STOP_DISTANCE or r < STOP_DISTANCE:
+        if (c < STOP_DISTANCE or l < STOP_DISTANCE or r < STOP_DISTANCE) and MOVING_FORWARD:
             print("Obstacle detected! Stopping the robot.")
             FRONT_OBSTACLE_DETECTED = True
             stop()
@@ -176,16 +177,21 @@ def process_text_command(cmd):
     """Processes text command received from the client."""
     result = None
     msg = "OK"
-
+    global MOVING_FORWARD
     if cmd.lower() == "move-forward":
+        MOVING_FORWARD = True
         move_forward()
     elif cmd.lower() == "move-backward":
+        MOVING_FORWARD = False
         move_backward()
     elif cmd.lower() == "turn-left":
+        MOVING_FORWARD = False
         turn_left()
     elif cmd.lower() == "turn-right":
+        MOVING_FORWARD = False
         turn_right()
     elif cmd.lower() == "stop":
+        MOVING_FORWARD = False
         stop()
     elif cmd.lower() == "get-sensor-data":
         result = read_sensors()
