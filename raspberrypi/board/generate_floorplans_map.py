@@ -359,4 +359,4 @@ def generate(image_path):
     print("✅ Binary map generated and saved as binary_map.txt")
     convert_bitmap_txt_to_coordinates(file_path="binary_map.txt", grid_scale=1)
 
-generate("e5_small.png")
+# generate("e5_small.png")
