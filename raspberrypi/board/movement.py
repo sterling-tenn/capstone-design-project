@@ -10,8 +10,12 @@ class Movement:
         self.right_servo = Servo(conf.RIGHT_SERVO_PIN)
         self.stop()
 
-    def move_forward(self, distance: float) -> None:
+    def move_forward(self, distance: float, turn_start_event, turn_end_event) -> None:
+        turn_start_event.set()
         self._execute_movement(distance, self._move_forward_logic)
+        turn_start_event.clear()
+        turn_end_event.set()
+        t.sleep(0.05)
 
     def move_backward(self, distance: float) -> None:
         self._execute_movement(distance, self._move_backward_logic)

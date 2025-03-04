@@ -53,7 +53,7 @@ STARTING_HEADING = 90
 SENSOR_FOV_ANGLE        = 10 # sensor field of view in degrees
 
 # particle filter
-INIT_POS_SIGMA = 0.75 # standard deviation of initial position in map
+INIT_POS_SIGMA = 0.50 # standard deviation of initial position in map
 SENSOR_SIGMA = 1.5 # standard deviation of sensor noise
 MAP_SCALE = 0.1
 NULL_WEIGHT = 0.001

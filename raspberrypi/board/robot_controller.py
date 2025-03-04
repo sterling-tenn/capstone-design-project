@@ -163,7 +163,7 @@ class RobotController:
             else: self.movement.turn_right(-theta, turn_start_event, turn_end_event)
 
             distance_to_move = self.gyro.dist(abs(delta_x), abs(delta_y))
-            self.movement.move_forward(distance_to_move) # Move
+            self.movement.move_forward(distance_to_move, turn_start_event, turn_end_event) # Move
             
             # 3. Apply movement (assume fixed speed) and sensor readingss
             sensor_readings = [self._sensor_centre, self._sensor_left, self._sensor_right]
