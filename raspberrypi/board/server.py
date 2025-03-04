@@ -227,11 +227,13 @@ def stop_auto_mcl():
     """Stops the auto mcl thread."""
     global auto_mcl_thread, mcl_stop_event
     if auto_mcl_thread and auto_mcl_thread.is_alive():
+        start_time = time.time()
         mcl_stop_event.set()  # Signal the thread to stop
         print("Stopping auto MCL thread...")
-        auto_mcl_thread.join(timeout=5)  # Wait for it to exit
-        print("Auto MCL stopped.")
-        return "Auto MCL stopped."
+        auto_mcl_thread.join()  # Wait for it to exit
+        msg = f"Auto MCL thread stopped after {time.time() - start_time:.2f} seconds."
+        print(msg)
+        return msg
     return "Auto MCL is not running."
 
 # Register stop() to be called on exit

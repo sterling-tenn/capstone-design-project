@@ -124,7 +124,11 @@ class RobotController:
         self._mcl = MCLocalization(map, [path[0][0], path[0][1], 0])
         collision_check = False
 
-        while not mcl_stop_event.is_set():
+        while True:
+            if mcl_stop_event.is_set():
+                print("mcl_stop_event is set, exiting auto mcl loop")
+                break
+
             while (collision_event.is_set()):  # Wait until collision_handler thread unsets the collision. MCL should recalculate new heading and distance to next waypoint based on current pos
                 collision_check = True
                 pass
