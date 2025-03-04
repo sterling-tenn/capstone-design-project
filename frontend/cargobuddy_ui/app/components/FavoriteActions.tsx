@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Col, Divider, Row, Button, Card, Typography, notification } from "antd";
 import { CaretRightOutlined, HeartFilled, PauseOutlined } from "@ant-design/icons";
-import { sendImage, stop } from "../lib/RaspberryPiCalls";
+import { sendImage, stopMcl } from "../lib/RaspberryPiCalls";
 
 const { Title } = Typography;
 
@@ -24,12 +24,11 @@ interface ActionButtonProps {
 const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     const [api, contextHolder] = notification.useNotification();
     const [buttonClicked, setButtonClicked] = useState(false);
-
     const { actionName, start, dest } = action;
 
     const inProgress = (msg: string) => {
         api.info({
-            message: "Sending",
+            message: "Processing",
             description: msg,
             placement: "topRight",
         });
@@ -44,58 +43,53 @@ const ActionButton: React.FC<ActionButtonProps> = ({ action }) => {
     };
 
     const handleClick = async () => {
-
-        setButtonClicked(prev => !prev);
-
         const savedFloorplan = localStorage.getItem("savedImage");
-        if (savedFloorplan) {
-            try {
-                if (buttonClicked) {
-                    const res = await sendImage(savedFloorplan, start, dest);
-                    if (res) {
-                        setButtonClicked(false)
-                    }
-                } else {
-                    const res = await stop();
-                    if (res) {
-                        setButtonClicked(false);
-                    }
-                }
-            } catch (err) {
-                error("Error sending command to CargoBuddy, please try again later.");
-            }
-        } else {
-            console.log("No saved floorplan!");
+
+        if (!savedFloorplan) {
             error("No saved floorplan found. Please upload one first.");
+            return;
+        }
+
+        setButtonClicked(true); // Optimistically update state
+
+        try {
+            let res = null;
+            if (!buttonClicked) {
+                inProgress("Sending floorplan to CargoBuddy...");
+                res = await sendImage(savedFloorplan, start, dest);
+            } else {
+                inProgress("Stopping CargoBuddy...");
+                res = await stopMcl();
+            }
+
+            if (!res || res.error) {
+                throw new Error(res?.error || "Unknown error");
+            }
+
+            setButtonClicked(!buttonClicked); // Toggle button state after successful API call
+        } catch (err) {
+            error("Error sending command to CargoBuddy, please try again later.");
+            setButtonClicked(false); // Revert state on failure
         }
     };
 
     return (
         <Col>
             {contextHolder}
-            {buttonClicked ? <Button
-                type={"primary"}
+            <Button
+                type="primary"
                 onClick={handleClick}
                 size="large"
                 style={{ height: 92 }}
-                icon={<PauseOutlined style={{ fontSize: 30 }} />}
-                danger
+                icon={buttonClicked ? <PauseOutlined style={{ fontSize: 30 }} /> : <CaretRightOutlined style={{ fontSize: 30 }} />}
+                danger={buttonClicked}
             >
                 <b>{actionName}</b>
-            </Button> 
-            : <Button
-                type={"primary"}
-                onClick={handleClick}
-                size="large"
-                style={{ height: 92 }}
-                icon={<CaretRightOutlined style={{ fontSize: 30 }} />}
-            >
-                <b>{actionName}</b>
-            </Button>}
-
+            </Button>
         </Col>
     );
 };
+
 
 // Favorite Actions Component
 const FavoriteActions: React.FC<FavoriteActionsProps> = ({ favoriteActions }) => {
